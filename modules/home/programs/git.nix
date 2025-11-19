@@ -4,12 +4,12 @@
   programs.git = {
     enable = true;
 
-    userName = "Your Name";  # Change this
-    userEmail = "your.email@example.com";  # Change this
-
     extraConfig = {
+      user.name = "Your Name";  # Change this
+      user.email = "your.email@example.com";  # Change this
+
       init.defaultBranch = "main";
-      pull.rebase = false;
+      pull.rebase = true;
       core.editor = "vim";
 
       # Aliases
