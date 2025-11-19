@@ -14,9 +14,9 @@
       find = "fd";
 
       # NixOS shortcuts
-      rebuild-desktop = "sudo nixos-rebuild switch --flake /home/user/nix-configs#desktop";
-      rebuild-laptop = "sudo nixos-rebuild switch --flake /home/user/nix-configs#laptop";
-      update-flake = "cd /home/user/nix-configs && nix flake update";
+      rebuild-desktop = "sudo nixos-rebuild switch --flake ~/nix-configs#desktop";
+      rebuild-laptop = "sudo nixos-rebuild switch --flake ~/nix-configs#laptop";
+      update-flake = "cd ~/nix-configs && nix flake update";
     };
 
     initExtra = ''
