@@ -8,6 +8,7 @@
 
     shellAliases = {
       ll = "ls -ah";
+      gs = "git status";
 
       # NixOS shortcuts
       rebuild-desktop = "sudo nixos-rebuild switch --flake ~/nix-configs#desktop";
