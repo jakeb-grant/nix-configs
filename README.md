@@ -36,9 +36,11 @@ nix-config/
 
 ### Fresh NixOS Installation
 
-#### Option 1: Direct Install with Flakes (Recommended)
+**Important:** Flakes are still experimental and NOT enabled by default in NixOS installers. You must enable them explicitly.
 
-Most modern NixOS installers (23.11+) have flakes enabled by default. Boot from the installer USB and:
+#### Recommended Method: Direct Flake Install
+
+Boot from the NixOS installer USB and:
 
 ```bash
 # 1. Partition your disk (example using UEFI)
@@ -69,16 +71,16 @@ cp /mnt/etc/nixos/hardware-configuration.nix /mnt/etc/nixos/nix-configs/hosts/de
 # 7. IMPORTANT: Configure your settings (see Configuration section below)
 # Edit username, timezone, git config, etc.
 
-# 8. Install from flake
-nixos-install --flake /mnt/etc/nixos/nix-configs#desktop
+# 8. Install from flake (enable flakes for this command)
+nixos-install --flake /mnt/etc/nixos/nix-configs#desktop --extra-experimental-features "nix-command flakes"
 
 # 9. Set root password when prompted, then reboot
 reboot
 ```
 
-#### Option 2: Two-Step Install (Older Installers)
+#### Alternative: Two-Step Install
 
-If your installer doesn't have flakes enabled:
+If you prefer the traditional approach:
 
 ```bash
 # 1. Partition, format, and mount as above
