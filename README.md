@@ -32,35 +32,95 @@ nix-config/
             └── git.nix          # Git configuration
 ```
 
-## Initial Setup
+## Installation
 
-### 1. Fresh NixOS Installation
+### Fresh NixOS Installation
 
-On a fresh NixOS install:
+#### Option 1: Direct Install with Flakes (Recommended)
+
+Most modern NixOS installers (23.11+) have flakes enabled by default. Boot from the installer USB and:
 
 ```bash
-# Generate hardware configuration
-sudo nixos-generate-config --root /mnt
+# 1. Partition your disk (example using UEFI)
+parted /dev/sda -- mklabel gpt
+parted /dev/sda -- mkpart ESP fat32 1MiB 512MiB
+parted /dev/sda -- set 1 esp on
+parted /dev/sda -- mkpart primary 512MiB 100%
 
-# Clone this repository
-git clone https://github.com/yourusername/nix-configs.git
-cd nix-configs
+# 2. Format partitions
+mkfs.fat -F 32 -n boot /dev/sda1
+mkfs.ext4 -L nixos /dev/sda2
 
-# Copy hardware-configuration.nix to appropriate host
-sudo cp /mnt/etc/nixos/hardware-configuration.nix hosts/desktop/  # or hosts/laptop/
+# 3. Mount partitions
+mount /dev/disk/by-label/nixos /mnt
+mkdir -p /mnt/boot
+mount /dev/disk/by-label/boot /mnt/boot
+
+# 4. Generate hardware configuration
+nixos-generate-config --root /mnt
+
+# 5. Clone this repository
+git clone https://github.com/yourusername/nix-configs /mnt/etc/nixos/nix-configs
+cd /mnt/etc/nixos/nix-configs
+
+# 6. Copy hardware-configuration.nix to your host
+cp /mnt/etc/nixos/hardware-configuration.nix /mnt/etc/nixos/nix-configs/hosts/desktop/
+
+# 7. IMPORTANT: Configure your settings (see Configuration section below)
+# Edit username, timezone, git config, etc.
+
+# 8. Install from flake
+nixos-install --flake /mnt/etc/nixos/nix-configs#desktop
+
+# 9. Set root password when prompted, then reboot
+reboot
 ```
 
-### 2. Configure Your Settings
+#### Option 2: Two-Step Install (Older Installers)
 
-Edit the following files with your personal information:
+If your installer doesn't have flakes enabled:
+
+```bash
+# 1. Partition, format, and mount as above
+
+# 2. Generate config
+nixos-generate-config --root /mnt
+
+# 3. Enable flakes in the temporary config
+cat >> /mnt/etc/nixos/configuration.nix << 'EOF'
+  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+EOF
+
+# 4. Do initial install
+nixos-install
+
+# 5. Reboot and login
+reboot
+
+# 6. After reboot, clone your config
+git clone https://github.com/yourusername/nix-configs
+cd nix-configs
+
+# 7. Copy hardware config
+sudo cp /etc/nixos/hardware-configuration.nix hosts/desktop/
+
+# 8. Configure your settings (see Configuration section below)
+
+# 9. Switch to flake configuration
+sudo nixos-rebuild switch --flake .#desktop
+```
+
+### Configuration Before First Build
+
+Before running `nixos-install` or `nixos-rebuild`, edit these files:
 
 **modules/system/core.nix:**
-- Change `time.timeZone`
-- Change `users.users.user` to your username
-- Update user description
+- Change `time.timeZone` to your timezone
+- Change `users.users.user` to your actual username
+- Update user `description`
 
 **modules/home/default.nix:**
-- Change `home-manager.users.user` to your username
+- Change `home-manager.users.user` to match your username
 
 **modules/home/programs/git.nix:**
 - Set your `userName`
@@ -69,16 +129,19 @@ Edit the following files with your personal information:
 **modules/home/programs/shell.nix:**
 - Update alias paths if you cloned to a different location
 
-### 3. Build and Switch
+**For laptop:** Use `hosts/laptop/` instead of `hosts/desktop/` in all commands above.
 
-For desktop:
-```bash
-sudo nixos-rebuild switch --flake .#desktop
-```
+### Post-Installation
 
-For laptop:
+After first boot:
+
 ```bash
-sudo nixos-rebuild switch --flake .#laptop
+# Set your user password
+passwd
+
+# Your shell aliases will be available after reloading your shell
+# Test with:
+rebuild-desktop  # or rebuild-laptop
 ```
 
 ## Daily Usage
