@@ -7,11 +7,7 @@
     enableCompletion = true;
 
     shellAliases = {
-      ll = "ls -alh";
-      ls = "eza";
-      cat = "bat";
-      grep = "rg";
-      find = "fd";
+      ll = "ls -ah";
 
       # NixOS shortcuts
       rebuild-desktop = "sudo nixos-rebuild switch --flake ~/nix-configs#desktop";
