@@ -128,7 +128,7 @@ HARDWARE_DEST="hosts/$HOST/hardware-configuration.nix"
 
 if [ -f "$HARDWARE_SRC" ]; then
     sudo cp "$HARDWARE_SRC" "$HARDWARE_DEST"
-    sudo chown $USER:$USER "$HARDWARE_DEST"
+    sudo chown $USER: "$HARDWARE_DEST"
     echo -e "${GREEN}✓ Copied $HARDWARE_SRC to $HARDWARE_DEST${NC}"
 else
     echo -e "${RED}⚠ Warning: $HARDWARE_SRC not found${NC}"
