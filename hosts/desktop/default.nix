@@ -24,6 +24,10 @@ in
     ../../modules/system/core.nix
     ../../modules/system/desktop-environment.nix
 
+    # Desktop environment modules
+    ../../modules/system/desktop/base.nix
+    ../../modules/system/desktop/plasma.nix
+
     # Desktop-specific hardware
     ../../modules/system/hardware/nvidia.nix
 

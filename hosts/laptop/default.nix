@@ -24,6 +24,10 @@ in
     ../../modules/system/core.nix
     ../../modules/system/desktop-environment.nix
 
+    # Desktop environment modules
+    ../../modules/system/desktop/base.nix
+    ../../modules/system/desktop/plasma.nix
+
     # Laptop-specific hardware (Hybrid Intel + NVIDIA)
     ../../modules/system/hardware/nvidia-prime.nix
 
