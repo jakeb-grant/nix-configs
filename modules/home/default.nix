@@ -28,7 +28,8 @@
       tmux
 
       # Terminal-based development tools
-      neovim
+      claude-code
+      gh
 
       # System monitoring
       btop
