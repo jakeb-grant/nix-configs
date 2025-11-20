@@ -153,36 +153,40 @@ if ! git config user.email > /dev/null 2>&1; then
     git config user.email "setup@localhost"
 fi
 
-# Add secrets.nix to local gitignore (never pushed to remote)
+# Add machine-specific files to local gitignore (never pushed to remote)
 if ! grep -q "hosts/\*/secrets.nix" .git/info/exclude 2>/dev/null; then
     echo "hosts/*/secrets.nix" >> .git/info/exclude
     echo -e "${GREEN}✓ Added secrets.nix to .git/info/exclude${NC}"
 fi
 
-# Use git add -N (intent-to-add) for secrets.nix
-# This makes it visible to flakes but prevents it from being committed
-git add -N "$SECRETS_FILE"
+if ! grep -q "hosts/\*/hardware-configuration.nix" .git/info/exclude 2>/dev/null; then
+    echo "hosts/*/hardware-configuration.nix" >> .git/info/exclude
+    echo -e "${GREEN}✓ Added hardware-configuration.nix to .git/info/exclude${NC}"
+fi
+
+# Use git add -f -N (intent-to-add) for machine-specific files
+# This makes them visible to flakes but prevents them from being committed
+git add -f -N "$SECRETS_FILE"
 echo -e "${GREEN}✓ Made $SECRETS_FILE visible to flakes (intent-to-add)${NC}"
 
-# Force add hardware-configuration.nix (gitignored but needed for flakes)
-git add -f "$HARDWARE_DEST" 2>/dev/null || true
+git add -f -N "$HARDWARE_DEST" 2>/dev/null || true
+echo -e "${GREEN}✓ Made $HARDWARE_DEST visible to flakes (intent-to-add)${NC}"
 
 # Add stateVersion changes
 git add modules/system/core.nix modules/home/default.nix 2>/dev/null || true
 
-# Commit ONLY the stateVersion changes and hardware config
-# secrets.nix is NOT committed (only intent-to-add)
+# Commit ONLY the stateVersion changes
+# secrets.nix and hardware-configuration.nix are NOT committed (only intent-to-add)
 COMMIT_MSG="Setup $HOST configuration
 
 - Set stateVersion: $STATE_VERSION
-- Added hardware-configuration.nix
 
-Note: Personal settings are in secrets.nix (not committed)"
+Note: Machine-specific files (secrets.nix, hardware-configuration.nix) are not committed"
 
 git commit -m "$COMMIT_MSG" > /dev/null 2>&1
 
 if [ $? -eq 0 ]; then
-    echo -e "${GREEN}✓ Committed setup changes (secrets.nix protected)${NC}"
+    echo -e "${GREEN}✓ Committed setup changes (machine-specific files protected)${NC}"
 else
     echo -e "${YELLOW}⚠ No changes to commit or commit failed${NC}"
 fi
@@ -210,9 +214,9 @@ echo -e "${YELLOW}Next step:${NC}"
 echo "Run: sudo nixos-rebuild switch --flake .#$HOST"
 echo ""
 echo -e "${YELLOW}Note:${NC}"
-echo "- secrets.nix is visible to flakes (via git add -N)"
+echo "- secrets.nix and hardware-configuration.nix are visible to flakes (via git add -f -N)"
 echo "- You can now add packages and push changes safely"
-echo "- secrets.nix will NEVER be committed or pushed"
+echo "- Machine-specific files will NEVER be committed or pushed"
 echo ""
 echo -e "${YELLOW}To restore backups if needed:${NC}"
 echo "  mv $HOST_FILE.backup $HOST_FILE"
