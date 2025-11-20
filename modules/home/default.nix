@@ -9,7 +9,7 @@
     ];
 
     # Home Manager version
-    home.stateVersion = "24.05";
+    home.stateVersion = "25.05";
 
     # User packages
     home.packages = with pkgs; [
