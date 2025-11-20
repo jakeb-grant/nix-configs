@@ -1,0 +1,111 @@
+#!/usr/bin/env bash
+# Setup script to configure user settings in NixOS config
+
+set -e
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+echo -e "${GREEN}NixOS User Configuration Setup${NC}"
+echo "================================"
+echo ""
+
+# Ask which host to configure
+echo "Which host are you configuring?"
+echo "1) desktop"
+echo "2) laptop"
+read -p "Enter choice (1 or 2): " host_choice
+
+if [ "$host_choice" = "1" ]; then
+    HOST="desktop"
+elif [ "$host_choice" = "2" ]; then
+    HOST="laptop"
+else
+    echo -e "${RED}Invalid choice. Exiting.${NC}"
+    exit 1
+fi
+
+HOST_FILE="hosts/$HOST/default.nix"
+
+if [ ! -f "$HOST_FILE" ]; then
+    echo -e "${RED}Error: $HOST_FILE not found${NC}"
+    exit 1
+fi
+
+echo ""
+echo -e "${YELLOW}Please enter your user information:${NC}"
+echo ""
+
+# Collect user information
+read -p "Username (e.g., john): " USERNAME
+read -p "Full Name (e.g., John Doe): " FULLNAME
+read -p "Email (e.g., john@example.com): " EMAIL
+read -p "Git Name (leave empty to use Full Name): " GITNAME
+
+# Set timezone
+echo ""
+echo "Common timezones:"
+echo "  - America/New_York"
+echo "  - America/Chicago"
+echo "  - America/Denver"
+echo "  - America/Los_Angeles"
+echo "  - Europe/London"
+echo "  - Europe/Paris"
+read -p "Timezone (e.g., America/Denver): " TIMEZONE
+
+# Backup original files
+echo ""
+echo -e "${YELLOW}Creating backups...${NC}"
+cp "$HOST_FILE" "$HOST_FILE.backup"
+cp "modules/system/core.nix" "modules/system/core.nix.backup"
+
+echo -e "${GREEN}Backups created with .backup extension${NC}"
+
+# Update host configuration
+echo ""
+echo -e "${YELLOW}Updating $HOST_FILE...${NC}"
+
+# Use sed to update the main-user block
+sed -i "s/userName = \"user\";/userName = \"$USERNAME\";/" "$HOST_FILE"
+sed -i "s/description = \"Main User\";/description = \"$FULLNAME\";/" "$HOST_FILE"
+sed -i "s/email = \"your.email@example.com\";/email = \"$EMAIL\";/" "$HOST_FILE"
+
+if [ -n "$GITNAME" ]; then
+    sed -i "s/gitName = \"\";/gitName = \"$GITNAME\";/" "$HOST_FILE"
+fi
+
+echo -e "${GREEN}✓ Updated $HOST_FILE${NC}"
+
+# Update timezone if provided
+if [ -n "$TIMEZONE" ]; then
+    echo -e "${YELLOW}Updating timezone in modules/system/core.nix...${NC}"
+    sed -i "s|time.timeZone = \"America/Denver\";|time.timeZone = \"$TIMEZONE\";|" "modules/system/core.nix"
+    echo -e "${GREEN}✓ Updated timezone to $TIMEZONE${NC}"
+fi
+
+# Show summary
+echo ""
+echo -e "${GREEN}Configuration complete!${NC}"
+echo "====================="
+echo "Host: $HOST"
+echo "Username: $USERNAME"
+echo "Full Name: $FULLNAME"
+echo "Email: $EMAIL"
+if [ -n "$GITNAME" ]; then
+    echo "Git Name: $GITNAME"
+fi
+if [ -n "$TIMEZONE" ]; then
+    echo "Timezone: $TIMEZONE"
+fi
+echo ""
+echo -e "${YELLOW}Next steps:${NC}"
+echo "1. Review the changes in $HOST_FILE"
+echo "2. Copy hardware-configuration.nix to hosts/$HOST/"
+echo "3. Run: sudo nixos-rebuild switch --flake .#$HOST"
+echo ""
+echo -e "${YELLOW}To restore backups if needed:${NC}"
+echo "  mv $HOST_FILE.backup $HOST_FILE"
+echo "  mv modules/system/core.nix.backup modules/system/core.nix"

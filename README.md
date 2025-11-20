@@ -21,6 +21,7 @@ nix-config/
 │
 └── modules/
     ├── system/
+    │   ├── user.nix             # Main user module (centralized user config)
     │   ├── core.nix             # Core system configuration
     │   ├── desktop.nix          # Desktop environment (KDE Plasma)
     │   └── hardware/
@@ -114,24 +115,49 @@ sudo nixos-rebuild switch --flake .#desktop
 
 ### Configuration Before First Build
 
-Before running `nixos-install` or `nixos-rebuild`, edit these files:
+Before running `nixos-install` or `nixos-rebuild`, you need to configure your user settings.
 
-**modules/system/core.nix:**
-- Change `time.timeZone` to your timezone
-- Change `users.users.user` to your actual username
-- Update user `description`
+#### Option 1: Automated Setup (Recommended)
 
-**modules/home/default.nix:**
-- Change `home-manager.users.user` to match your username
+Run the setup script to configure your user information interactively:
 
-**modules/home/programs/git.nix:**
-- Set your `userName`
-- Set your `userEmail`
+```bash
+cd nix-configs
+./setup-user.sh
+```
 
-**modules/home/programs/shell.nix:**
-- Update alias paths if you cloned to a different location
+The script will ask for:
+- Username
+- Full name
+- Email address
+- Git name (optional)
+- Timezone
 
-**For laptop:** Use `hosts/laptop/` instead of `hosts/desktop/` in all commands above.
+It will automatically update the appropriate configuration files.
+
+#### Option 2: Manual Configuration
+
+Edit your host configuration file directly.
+
+**For desktop** (`hosts/desktop/default.nix`):
+```nix
+main-user = {
+  enable = true;
+  userName = "yourname";              # Your actual username
+  description = "Your Full Name";     # Your full name
+  email = "you@example.com";          # Your email for git
+  gitName = "";                       # Optional: git name (uses description if empty)
+};
+```
+
+**For laptop** (`hosts/laptop/default.nix`):
+- Configure the same `main-user` block as above
+
+**Optional customization:**
+- `modules/system/core.nix` - Change `time.timeZone` to your timezone
+- `modules/home/programs/shell.nix` - Update alias paths if you cloned to a different location
+
+That's it! All user settings (username, email, git config) are now centralized in one place.
 
 ### Post-Installation
 

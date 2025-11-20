@@ -23,13 +23,8 @@
     LC_TIME = "en_US.UTF-8";
   };
 
-  # User account
-  users.users.user = {  # Change 'user' to your username
-    isNormalUser = true;
-    description = "Main User";  # Change to your name
-    extraGroups = [ "networkmanager" "wheel" "video" "audio" ];
-    # To set password: passwd user
-  };
+  # User account is now configured via modules/system/user.nix
+  # See host configuration files for main-user settings
 
   # Enable sudo
   security.sudo.wheelNeedsPassword = true;
