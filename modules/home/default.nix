@@ -37,6 +37,10 @@
     # Session variables
     home.sessionVariables = {
       EDITOR = "vim";
+    } // lib.optionalAttrs
+      ((osConfig.desktop-environment.de or "none") != "none") {
+      # Enable Wayland for Firefox when using Wayland-capable desktop environments
+      MOZ_ENABLE_WAYLAND = "1";
     };
 
     # Note: Unfree packages are allowed system-wide in modules/system/core.nix
