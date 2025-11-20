@@ -8,6 +8,13 @@
   # Networking
   networking.networkmanager.enable = true;
 
+  # Alternative: WiFi via wpa_supplicant (conflicts with NetworkManager)
+  # networking.wireless.enable = true;
+
+  # Network proxy configuration
+  # networking.proxy.default = "http://user:password@proxy:port/";
+  # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
+
   # Timezone and locale
   time.timeZone = "America/Denver";  # Change to your timezone
   i18n.defaultLocale = "en_US.UTF-8";
@@ -41,12 +48,30 @@
     zip
   ];
 
+  # Additional programs
+  # programs.mtr.enable = true;  # Network diagnostic tool
+  # programs.gnupg.agent = {
+  #   enable = true;
+  #   enableSSHSupport = true;
+  # };
+
   # Enable flakes
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
+
+  # Allow unfree packages system-wide
+  nixpkgs.config.allowUnfree = true;
+
+  # Remote access
+  # services.openssh.enable = true;
+
+  # Firewall configuration
+  # networking.firewall.allowedTCPPorts = [ ... ];
+  # networking.firewall.allowedUDPPorts = [ ... ];
+  # networking.firewall.enable = false;  # Disable firewall entirely
 
   # Auto upgrade
   system.autoUpgrade.enable = false;  # Set to true for automatic updates
 
   # NixOS version
-  system.stateVersion = "24.05";  # Don't change this after initial install
+  system.stateVersion = "25.05";  # Don't change this after initial install
 }
