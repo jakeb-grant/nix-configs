@@ -73,43 +73,43 @@ git clone https://github.com/yourusername/nix-configs
 cd nix-configs
 ```
 
-#### Step 3: Copy Hardware Configuration
+#### Step 3: Run Setup Script
 
-The graphical installer generated a hardware-configuration.nix for your specific machine. Copy it:
-
-```bash
-# For desktop
-sudo cp /etc/nixos/hardware-configuration.nix ~/nix-configs/hosts/desktop/
-
-# For laptop
-sudo cp /etc/nixos/hardware-configuration.nix ~/nix-configs/hosts/laptop/
-```
-
-#### Step 4: Configure Your User Settings
-
-**Option 1: Automated Setup (Recommended)**
-
-Run the setup script to configure your user information interactively:
+Run the automated setup script to configure everything:
 
 ```bash
 cd nix-configs
 ./setup-user.sh
 ```
 
-The script will ask for:
+The script will:
+- Detect your system's stateVersion automatically
+- Ask for your user information (username, full name, email, etc.)
+- Copy hardware-configuration.nix to the correct host directory
+- Update all configuration files
+
+**What the script asks for:**
+- Which host to configure (desktop or laptop)
 - Username
 - Full name
 - Email address
 - Git name (optional)
 - Timezone
 
-It will automatically update the appropriate configuration files.
+**Alternative: Manual Configuration**
 
-**Option 2: Manual Configuration**
+If you prefer to configure manually instead of using the setup script:
 
-Edit your host configuration file directly.
+1. **Copy hardware configuration:**
+   ```bash
+   # For desktop
+   sudo cp /etc/nixos/hardware-configuration.nix ~/nix-configs/hosts/desktop/
 
-**For desktop** (`hosts/desktop/default.nix`):
+   # For laptop
+   sudo cp /etc/nixos/hardware-configuration.nix ~/nix-configs/hosts/laptop/
+   ```
+
+2. **Edit your host configuration file** (`hosts/desktop/default.nix` or `hosts/laptop/default.nix`):
 ```nix
 main-user = {
   enable = true;
@@ -129,7 +129,7 @@ main-user = {
 
 That's it! All user settings (username, email, git config) are now centralized in one place.
 
-#### Step 5: Switch to Flake Configuration
+#### Step 4: Switch to Flake Configuration
 
 Now apply your flake-based configuration:
 
@@ -150,7 +150,7 @@ This will:
 - Configure git with your name and email
 - Install KDE Plasma desktop environment
 
-#### Step 6: Set Your User Password
+#### Step 5: Set Your User Password
 
 After the rebuild completes, set your password:
 
