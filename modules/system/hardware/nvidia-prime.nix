@@ -66,16 +66,15 @@
     ];
   };
 
-  # Environment variables for hybrid graphics
+  # Environment variables for NVIDIA hybrid graphics
   environment.sessionVariables = {
-    # Use Intel for most things (better battery)
-    # NVIDIA will be used when running 'nvidia-offload <command>'
+    # NVIDIA-specific environment variables
+    LIBVA_DRIVER_NAME = "nvidia";
+    GBM_BACKEND = "nvidia-drm";
+    __GLX_VENDOR_LIBRARY_NAME = "nvidia";
 
     # Wayland cursor fix for NVIDIA
     WLR_NO_HARDWARE_CURSORS = "1";
-
-    # Enable GPU acceleration for Electron apps (VSCode, Discord, etc.)
-    NIXOS_OZONE_WL = "1";
   };
 
   # Kernel parameters

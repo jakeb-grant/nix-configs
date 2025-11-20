@@ -31,8 +31,5 @@
   environment.sessionVariables = {
     # Enable Wayland for Electron apps (VSCode, Discord, etc.)
     NIXOS_OZONE_WL = "1";
-
-    # NVIDIA-specific (uncomment if using NVIDIA)
-    # WLR_NO_HARDWARE_CURSORS = "1";
   };
 }

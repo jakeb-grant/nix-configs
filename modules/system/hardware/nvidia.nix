@@ -38,18 +38,15 @@
     ];
   };
 
-  # Environment variables for Wayland/Hyprland compatibility
+  # Environment variables for NVIDIA
   environment.sessionVariables = {
-    # NVIDIA-specific Wayland environment variables
+    # NVIDIA-specific environment variables
     LIBVA_DRIVER_NAME = "nvidia";
     GBM_BACKEND = "nvidia-drm";
     __GLX_VENDOR_LIBRARY_NAME = "nvidia";
 
     # Wayland cursor fix for NVIDIA
     WLR_NO_HARDWARE_CURSORS = "1";
-
-    # Enable NVIDIA GPU for Electron apps (VSCode, Discord, etc.)
-    NIXOS_OZONE_WL = "1";
   };
 
   # Kernel parameters for NVIDIA
