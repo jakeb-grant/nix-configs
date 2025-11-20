@@ -2,15 +2,8 @@
 
 {
   # Enable X11 windowing system
+  # Note: Even Wayland compositors often need this for X11 app compatibility
   services.xserver.enable = true;
-
-  # Enable KDE Plasma Desktop Environment
-  services.displayManager.sddm.enable = true;
-  services.desktopManager.plasma6.enable = true;
-
-  # Alternative: Hyprland (uncomment to use instead of KDE)
-  # programs.hyprland.enable = true;
-  # services.xserver.displayManager.gdm.enable = true;
 
   # Configure keymap
   services.xserver.xkb = {
