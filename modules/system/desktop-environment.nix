@@ -16,11 +16,13 @@
         - hyprland: Hyprland Wayland compositor
         - none: No desktop environment (server/minimal)
 
-        Note: Set this option in your host config, then import the
-        corresponding desktop modules:
-        - modules/system/desktop/base.nix (always)
-        - modules/system/desktop/plasma.nix (for Plasma)
-        - modules/system/desktop/hyprland.nix (for Hyprland)
+        Note: This option is automatically set from secrets.nix in host configs.
+        The desktop environment choice in secrets.nix controls both:
+        1. Which desktop modules are imported (via lib.optionals in host config)
+        2. The value of this option (single source of truth)
+
+        To change desktop environment, edit secrets.nix in your host directory
+        or re-run setup.sh.
       '';
     };
   };

@@ -60,6 +60,31 @@ echo "  - Europe/Paris"
 read -p "Timezone [America/Denver]: " TIMEZONE
 TIMEZONE=${TIMEZONE:-America/Denver}
 
+# Choose desktop environment
+echo ""
+echo "Desktop Environment:"
+echo "  1) Plasma (KDE Plasma 6)"
+echo "  2) Hyprland (Wayland compositor)"
+echo "  3) None (minimal/server)"
+read -p "Choose desktop environment [1]: " DE_CHOICE
+DE_CHOICE=${DE_CHOICE:-1}
+
+case "$DE_CHOICE" in
+    1)
+        DESKTOP_ENV="plasma"
+        ;;
+    2)
+        DESKTOP_ENV="hyprland"
+        ;;
+    3)
+        DESKTOP_ENV="none"
+        ;;
+    *)
+        echo -e "${YELLOW}Invalid choice, defaulting to Plasma${NC}"
+        DESKTOP_ENV="plasma"
+        ;;
+esac
+
 # Detect stateVersion from existing system
 echo ""
 echo -e "${YELLOW}Detecting system stateVersion...${NC}"
@@ -111,6 +136,7 @@ cat > "$SECRETS_FILE" << EOF
     gitName = "$GITNAME";
     timezone = "$TIMEZONE";
   };
+  desktopEnvironment = "$DESKTOP_ENV";
 }
 EOF
 
@@ -205,6 +231,7 @@ fi
 if [ -n "$TIMEZONE" ]; then
     echo "Timezone: $TIMEZONE"
 fi
+echo "Desktop Environment: $DESKTOP_ENV"
 echo "StateVersion: $STATE_VERSION"
 echo ""
 echo -e "${GREEN}✓ Personal data stored in: $SECRETS_FILE${NC}"
