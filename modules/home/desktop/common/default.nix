@@ -10,7 +10,7 @@
     firefox
 
     # Development tools
-    vscode
+    zed-editor
   ];
 
   # Firefox configuration
