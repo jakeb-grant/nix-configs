@@ -28,9 +28,6 @@
       # Web browser
       firefox
 
-      # File manager (included with KDE Plasma, but can be explicitly added)
-      kdePackages.dolphin
-
       # System monitoring
       btop
     ];
