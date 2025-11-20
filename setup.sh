@@ -183,12 +183,12 @@ COMMIT_MSG="Setup $HOST configuration
 
 Note: Machine-specific files (secrets.nix, hardware-configuration.nix) are not committed"
 
-git commit -m "$COMMIT_MSG" > /dev/null 2>&1
+git commit -m "$COMMIT_MSG" > /dev/null 2>&1 || true
 
-if [ $? -eq 0 ]; then
-    echo -e "${GREEN}✓ Committed setup changes (machine-specific files protected)${NC}"
+if git diff --cached --quiet && git diff-index --quiet HEAD -- 2>/dev/null; then
+    echo -e "${YELLOW}⚠ No changes to commit (stateVersion already set)${NC}"
 else
-    echo -e "${YELLOW}⚠ No changes to commit or commit failed${NC}"
+    echo -e "${GREEN}✓ Committed setup changes (machine-specific files protected)${NC}"
 fi
 
 # Show summary
