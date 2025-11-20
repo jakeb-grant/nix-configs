@@ -11,7 +11,7 @@
     ../../modules/system/desktop.nix
 
     # Desktop-specific hardware
-    ../../modules/system/hardware/amd.nix
+    ../../modules/system/hardware/nvidia.nix
 
     # Home manager configuration
     ../../modules/home

@@ -10,8 +10,8 @@
     ../../modules/system/core.nix
     ../../modules/system/desktop.nix
 
-    # Laptop doesn't import AMD module - uses integrated graphics
-    # If you need laptop-specific configs (battery, power management), add them here
+    # Laptop-specific hardware (Hybrid Intel + NVIDIA)
+    ../../modules/system/hardware/nvidia-prime.nix
 
     # Home manager configuration
     ../../modules/home
