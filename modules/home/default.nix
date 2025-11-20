@@ -37,7 +37,6 @@
       EDITOR = "vim";
     };
 
-    # Allow unfree packages
-    nixpkgs.config.allowUnfree = true;
+    # Note: Unfree packages are allowed system-wide in modules/system/core.nix
   };
 }

@@ -10,10 +10,9 @@ in
   programs.git = {
     enable = true;
 
-    userName = gitUserName;
-    userEmail = mainUser.email;
-
-    extraConfig = {
+    settings = {
+      user.name = gitUserName;
+      user.email = mainUser.email;
       init.defaultBranch = "main";
       pull.rebase = true;
       core.editor = "vim";
