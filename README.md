@@ -249,6 +249,52 @@ environment.systemPackages = with pkgs; [
 ];
 ```
 
+#### Session Variables (Environment Variables)
+
+Environment variables should follow the same separation of concerns as packages:
+
+**System-Level Variables** (`environment.sessionVariables`):
+- Hardware/driver configuration (visible to all users including root)
+- System infrastructure requirements
+- **Location:** Hardware modules (`modules/system/hardware/*.nix`) or DE system modules
+- **Examples:** `LIBVA_DRIVER_NAME`, `GBM_BACKEND`, `WLR_NO_HARDWARE_CURSORS`, `NIXOS_OZONE_WL`
+
+**User-Level Variables** (`home.sessionVariables`):
+- User preferences and application-specific settings
+- Only visible to the specific user
+- **Location:** With the related application or in `modules/home/default.nix`
+- **Examples:** `EDITOR`, `PAGER`, `MOZ_ENABLE_WAYLAND`
+
+**Examples:**
+
+System variable for NVIDIA hardware:
+```nix
+# modules/system/hardware/nvidia.nix
+environment.sessionVariables = {
+  LIBVA_DRIVER_NAME = "nvidia";  # All users need this for NVIDIA
+};
+```
+
+User variable for application config:
+```nix
+# modules/home/desktop/common/default.nix (with Firefox)
+home.sessionVariables = {
+  MOZ_ENABLE_WAYLAND = "1";  # Firefox-specific
+};
+```
+
+User preference:
+```nix
+# modules/home/default.nix
+home.sessionVariables = {
+  EDITOR = "vim";  # Personal preference
+};
+```
+
+**Rule of Thumb:**
+- **System variables** → Hardware drivers, system infrastructure, affects all users
+- **Home variables** → Application configs, user preferences, per-user settings
+
 ### Useful Aliases (after first rebuild)
 
 - `rebuild-desktop` - Rebuild desktop configuration
