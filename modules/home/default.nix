@@ -37,10 +37,6 @@
     # Session variables
     home.sessionVariables = {
       EDITOR = "vim";
-    } // lib.optionalAttrs
-      (lib.elem (osConfig.desktop-environment.de or "none") ["plasma" "hyprland"]) {
-      # Enable Wayland for Firefox (only for Wayland-capable DEs)
-      MOZ_ENABLE_WAYLAND = "1";
     };
 
     # Note: Unfree packages are allowed system-wide in modules/system/core.nix
