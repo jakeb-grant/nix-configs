@@ -40,7 +40,10 @@ echo -e "${YELLOW}Please enter your user information:${NC}"
 echo ""
 
 # Collect user information
-read -p "Username (e.g., john): " USERNAME
+CURRENT_USER=$(whoami)
+read -p "Username [${CURRENT_USER}]: " USERNAME
+USERNAME=${USERNAME:-$CURRENT_USER}
+
 read -p "Full Name (e.g., John Doe): " FULLNAME
 read -p "Email (e.g., john@example.com): " EMAIL
 read -p "Git Name (leave empty to use Full Name): " GITNAME
@@ -54,7 +57,8 @@ echo "  - America/Denver"
 echo "  - America/Los_Angeles"
 echo "  - Europe/London"
 echo "  - Europe/Paris"
-read -p "Timezone (e.g., America/Denver): " TIMEZONE
+read -p "Timezone [America/Denver]: " TIMEZONE
+TIMEZONE=${TIMEZONE:-America/Denver}
 
 # Detect stateVersion from existing system
 echo ""
