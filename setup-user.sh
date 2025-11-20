@@ -56,11 +56,32 @@ echo "  - Europe/London"
 echo "  - Europe/Paris"
 read -p "Timezone (e.g., America/Denver): " TIMEZONE
 
+# Detect stateVersion from existing system
+echo ""
+echo -e "${YELLOW}Detecting system stateVersion...${NC}"
+STATE_VERSION=""
+if [ -f /etc/nixos/configuration.nix ]; then
+    STATE_VERSION=$(grep -oP 'system\.stateVersion\s*=\s*"\K[^"]+' /etc/nixos/configuration.nix 2>/dev/null || echo "")
+fi
+
+if [ -z "$STATE_VERSION" ]; then
+    echo -e "${YELLOW}Could not detect stateVersion from /etc/nixos/configuration.nix${NC}"
+    echo "Common versions: 24.05, 24.11, 25.05"
+    read -p "Enter your NixOS stateVersion (e.g., 24.05): " STATE_VERSION
+    if [ -z "$STATE_VERSION" ]; then
+        echo -e "${RED}Error: stateVersion is required${NC}"
+        exit 1
+    fi
+else
+    echo -e "${GREEN}✓ Detected stateVersion: $STATE_VERSION${NC}"
+fi
+
 # Backup original files
 echo ""
 echo -e "${YELLOW}Creating backups...${NC}"
 cp "$HOST_FILE" "$HOST_FILE.backup"
 cp "modules/system/core.nix" "modules/system/core.nix.backup"
+cp "modules/home/default.nix" "modules/home/default.nix.backup"
 
 echo -e "${GREEN}Backups created with .backup extension${NC}"
 
@@ -86,6 +107,15 @@ if [ -n "$TIMEZONE" ]; then
     echo -e "${GREEN}✓ Updated timezone to $TIMEZONE${NC}"
 fi
 
+# Update stateVersion in both system and home-manager configs
+echo ""
+echo -e "${YELLOW}Updating stateVersion to $STATE_VERSION...${NC}"
+sed -i "s|system.stateVersion = \".*\";|system.stateVersion = \"$STATE_VERSION\";|" "modules/system/core.nix"
+echo -e "${GREEN}✓ Updated system.stateVersion in modules/system/core.nix${NC}"
+
+sed -i "s|home.stateVersion = \".*\";|home.stateVersion = \"$STATE_VERSION\";|" "modules/home/default.nix"
+echo -e "${GREEN}✓ Updated home.stateVersion in modules/home/default.nix${NC}"
+
 # Show summary
 echo ""
 echo -e "${GREEN}Configuration complete!${NC}"
@@ -100,6 +130,7 @@ fi
 if [ -n "$TIMEZONE" ]; then
     echo "Timezone: $TIMEZONE"
 fi
+echo "StateVersion: $STATE_VERSION"
 echo ""
 echo -e "${YELLOW}Next steps:${NC}"
 echo "1. Review the changes in $HOST_FILE"
@@ -109,3 +140,4 @@ echo ""
 echo -e "${YELLOW}To restore backups if needed:${NC}"
 echo "  mv $HOST_FILE.backup $HOST_FILE"
 echo "  mv modules/system/core.nix.backup modules/system/core.nix"
+echo "  mv modules/home/default.nix.backup modules/home/default.nix"
