@@ -25,7 +25,9 @@ nix-config/
     │   ├── core.nix             # Core system configuration
     │   ├── desktop.nix          # Desktop environment (KDE Plasma)
     │   └── hardware/
-    │       └── amd.nix          # AMD GPU configuration
+    │       ├── nvidia.nix       # NVIDIA GPU configuration (desktop)
+    │       ├── nvidia-prime.nix # NVIDIA Prime/Optimus (laptop hybrid graphics)
+    │       └── amd.nix          # AMD GPU configuration (alternative)
     └── home/
         ├── default.nix          # Home-manager entry point
         └── programs/
@@ -193,14 +195,32 @@ Edit `modules/system/desktop.nix`:
 - Comment out KDE sections
 - Uncomment Hyprland sections
 
-### Add Hardware Configurations
+### GPU Configurations
 
-Create new files in `modules/system/hardware/`:
-- `nvidia.nix` for NVIDIA GPUs
-- `intel.nix` for Intel iGPUs
-- `hybrid.nix` for laptop hybrid graphics
+This repository includes GPU configurations in `modules/system/hardware/`:
 
-Then import them in the appropriate host's `default.nix`.
+**NVIDIA (Desktop)** - `nvidia.nix`:
+- Proprietary NVIDIA drivers with Wayland/Hyprland support
+- Hardware acceleration (OpenGL, Vulkan)
+- 32-bit support for gaming
+- Used in `hosts/desktop/default.nix`
+
+**NVIDIA Prime (Laptop)** - `nvidia-prime.nix`:
+- Hybrid Intel + NVIDIA configuration
+- Offload mode: Intel by default, NVIDIA on-demand
+- Run apps on NVIDIA: `nvidia-offload <command>`
+- Example: `nvidia-offload steam` or `nvidia-offload hyprland`
+- Battery-efficient with performance when needed
+- Used in `hosts/laptop/default.nix`
+
+**AMD (Alternative)** - `amd.nix`:
+- AMD GPU configuration for reference
+- Switch by editing your host's `default.nix`
+
+**Customizing GPU settings:**
+- To change NVIDIA driver version: Edit `package` in nvidia.nix
+- To switch to sync mode (laptop): Enable `prime.sync` in nvidia-prime.nix
+- To verify PCI bus IDs: `lspci | grep -E "VGA|3D"`
 
 ### Per-Host Customization
 
@@ -219,6 +239,24 @@ Ensure you're using `sudo` for `nixos-rebuild` commands.
 ### Flake errors
 
 Run `nix flake check` to validate your configuration.
+
+### NVIDIA-specific issues
+
+**Black screen after boot:**
+- Check that PCI bus IDs are correct in nvidia-prime.nix: `lspci | grep -E "VGA|3D"`
+- Try adding `nomodeset` to kernel params temporarily
+
+**Laptop: GPU not switching:**
+- Verify offload is working: `nvidia-offload glxinfo | grep "NVIDIA"`
+- Check `nvidia-smi` to see if NVIDIA is active
+
+**Wayland/Hyprland cursor issues:**
+- Environment variable `WLR_NO_HARDWARE_CURSORS=1` is already set
+- If issues persist, try `WLR_RENDERER=vulkan`
+
+**Poor battery life (laptop):**
+- Ensure `powerManagement.finegrained = true` in nvidia-prime.nix
+- Verify Intel is being used by default: `glxinfo | grep "OpenGL renderer"`
 
 ## Resources
 
