@@ -262,8 +262,8 @@ Environment variables should follow the same separation of concerns as packages:
 **User-Level Variables** (`home.sessionVariables`):
 - User preferences and application-specific settings
 - Only visible to the specific user
-- **Location:** With the related application or in `modules/home/default.nix`
-- **Examples:** `EDITOR`, `PAGER`, `MOZ_ENABLE_WAYLAND`
+- **Location:** With the related application (preferred) or in `modules/home/default.nix` (for general preferences)
+- **Examples:** `EDITOR` (general), `PAGER` (general), `MOZ_ENABLE_WAYLAND` (with Firefox in desktop/common)
 
 **Examples:**
 
