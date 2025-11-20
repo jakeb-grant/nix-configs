@@ -58,7 +58,7 @@
       # Intel drivers
       intel-media-driver    # LIBVA_DRIVER_NAME=iHD
       intel-vaapi-driver   # LIBVA_DRIVER_NAME=i965 (older, but more compatible)
-      vaapiVdpau
+      libva-vdpau-driver
       libvdpau-va-gl
 
       # NVIDIA drivers
