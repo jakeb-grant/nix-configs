@@ -83,33 +83,38 @@ fi
 # Backup original files
 echo ""
 echo -e "${YELLOW}Creating backups...${NC}"
-cp "$HOST_FILE" "$HOST_FILE.backup"
-cp "modules/system/core.nix" "modules/system/core.nix.backup"
-cp "modules/home/default.nix" "modules/home/default.nix.backup"
+if [ -f "$HOST_FILE" ] && [ ! -f "$HOST_FILE.backup" ]; then
+    cp "$HOST_FILE" "$HOST_FILE.backup"
+fi
+if [ -f "modules/system/core.nix" ] && [ ! -f "modules/system/core.nix.backup" ]; then
+    cp "modules/system/core.nix" "modules/system/core.nix.backup"
+fi
+if [ -f "modules/home/default.nix" ] && [ ! -f "modules/home/default.nix.backup" ]; then
+    cp "modules/home/default.nix" "modules/home/default.nix.backup"
+fi
 
 echo -e "${GREEN}Backups created with .backup extension${NC}"
 
-# Update host configuration
+# Create secrets.nix file
 echo ""
-echo -e "${YELLOW}Updating $HOST_FILE...${NC}"
+echo -e "${YELLOW}Creating secrets.nix...${NC}"
+SECRETS_FILE="hosts/$HOST/secrets.nix"
 
-# Use sed to update the main-user block
-sed -i "s/userName = \"user\";/userName = \"$USERNAME\";/" "$HOST_FILE"
-sed -i "s/description = \"Main User\";/description = \"$FULLNAME\";/" "$HOST_FILE"
-sed -i "s/email = \"your.email@example.com\";/email = \"$EMAIL\";/" "$HOST_FILE"
+cat > "$SECRETS_FILE" << EOF
+# This file contains personal/machine-specific configuration
+# It is gitignored and will not be pushed to the repository
+{
+  personalInfo = {
+    userName = "$USERNAME";
+    fullName = "$FULLNAME";
+    email = "$EMAIL";
+    gitName = "$GITNAME";
+    timezone = "$TIMEZONE";
+  };
+}
+EOF
 
-if [ -n "$GITNAME" ]; then
-    sed -i "s/gitName = \"\";/gitName = \"$GITNAME\";/" "$HOST_FILE"
-fi
-
-echo -e "${GREEN}✓ Updated $HOST_FILE${NC}"
-
-# Update timezone if provided
-if [ -n "$TIMEZONE" ]; then
-    echo -e "${YELLOW}Updating timezone in modules/system/core.nix...${NC}"
-    sed -i "s|time.timeZone = \"America/Denver\";|time.timeZone = \"$TIMEZONE\";|" "modules/system/core.nix"
-    echo -e "${GREEN}✓ Updated timezone to $TIMEZONE${NC}"
-fi
+echo -e "${GREEN}✓ Created $SECRETS_FILE${NC}"
 
 # Update stateVersion in both system and home-manager configs
 echo ""
@@ -135,9 +140,9 @@ else
     echo -e "${YELLOW}You'll need to generate it with: sudo nixos-generate-config${NC}"
 fi
 
-# Commit changes to git
+# Setup git for flakes
 echo ""
-echo -e "${YELLOW}Committing changes to git...${NC}"
+echo -e "${YELLOW}Setting up git for flakes...${NC}"
 
 # Set temporary git config if not already configured
 if ! git config user.name > /dev/null 2>&1; then
@@ -148,21 +153,36 @@ if ! git config user.email > /dev/null 2>&1; then
     git config user.email "setup@localhost"
 fi
 
-# Add all changes including gitignored files (like hardware-configuration.nix)
-git add -f -A
+# Add secrets.nix to local gitignore (never pushed to remote)
+if ! grep -q "hosts/\*/secrets.nix" .git/info/exclude 2>/dev/null; then
+    echo "hosts/*/secrets.nix" >> .git/info/exclude
+    echo -e "${GREEN}✓ Added secrets.nix to .git/info/exclude${NC}"
+fi
 
-# Commit with descriptive message
-COMMIT_MSG="Configure $HOST: $USERNAME ($FULLNAME)
+# Use git add -N (intent-to-add) for secrets.nix
+# This makes it visible to flakes but prevents it from being committed
+git add -N "$SECRETS_FILE"
+echo -e "${GREEN}✓ Made $SECRETS_FILE visible to flakes (intent-to-add)${NC}"
 
-- Set timezone: $TIMEZONE
+# Force add hardware-configuration.nix (gitignored but needed for flakes)
+git add -f "$HARDWARE_DEST" 2>/dev/null || true
+
+# Add stateVersion changes
+git add modules/system/core.nix modules/home/default.nix 2>/dev/null || true
+
+# Commit ONLY the stateVersion changes and hardware config
+# secrets.nix is NOT committed (only intent-to-add)
+COMMIT_MSG="Setup $HOST configuration
+
 - Set stateVersion: $STATE_VERSION
 - Added hardware-configuration.nix
-- Configured user settings"
+
+Note: Personal settings are in secrets.nix (not committed)"
 
 git commit -m "$COMMIT_MSG" > /dev/null 2>&1
 
 if [ $? -eq 0 ]; then
-    echo -e "${GREEN}✓ Changes committed to git${NC}"
+    echo -e "${GREEN}✓ Committed setup changes (secrets.nix protected)${NC}"
 else
     echo -e "${YELLOW}⚠ No changes to commit or commit failed${NC}"
 fi
@@ -183,10 +203,16 @@ if [ -n "$TIMEZONE" ]; then
 fi
 echo "StateVersion: $STATE_VERSION"
 echo ""
-echo -e "${GREEN}All changes have been committed to git!${NC}"
+echo -e "${GREEN}✓ Personal data stored in: $SECRETS_FILE${NC}"
+echo -e "${GREEN}✓ This file is protected and will NOT be pushed to GitHub${NC}"
 echo ""
 echo -e "${YELLOW}Next step:${NC}"
 echo "Run: sudo nixos-rebuild switch --flake .#$HOST"
+echo ""
+echo -e "${YELLOW}Note:${NC}"
+echo "- secrets.nix is visible to flakes (via git add -N)"
+echo "- You can now add packages and push changes safely"
+echo "- secrets.nix will NEVER be committed or pushed"
 echo ""
 echo -e "${YELLOW}To restore backups if needed:${NC}"
 echo "  mv $HOST_FILE.backup $HOST_FILE"
