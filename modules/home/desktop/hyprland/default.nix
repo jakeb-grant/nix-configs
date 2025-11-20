@@ -187,9 +187,39 @@
     '';
   };
 
-  # Additional Hyprland-related packages
+  # Hyprland user packages
   home.packages = with pkgs; [
-    # These are installed system-wide in hyprland.nix
-    # Add user-specific tools here if needed
+    # Terminal emulator
+    kitty
+    # Alternatives: alacritty, foot
+
+    # Application launcher
+    rofi-wayland
+
+    # Status bar (configured above via programs.waybar)
+    # waybar is enabled via programs.waybar, not home.packages
+
+    # Notification daemon
+    mako
+    libnotify
+
+    # Screenshot utilities
+    grim
+    slurp
+
+    # Clipboard manager
+    wl-clipboard
+
+    # Wallpaper daemon
+    hyprpaper
+
+    # Screen locker
+    swaylock
+
+    # File manager
+    xfce.thunar
+
+    # Network management applet
+    networkmanagerapplet
   ];
 }

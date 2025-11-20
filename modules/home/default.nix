@@ -17,7 +17,7 @@
     # Home Manager version
     home.stateVersion = "25.05";
 
-    # User packages
+    # User packages (CLI tools only, GUI apps in desktop/common)
     home.packages = with pkgs; [
       # Terminal utilities
       ripgrep
@@ -27,12 +27,8 @@
       fzf
       tmux
 
-      # Development tools
+      # Terminal-based development tools
       neovim
-      vscode
-
-      # Web browser
-      firefox
 
       # System monitoring
       btop

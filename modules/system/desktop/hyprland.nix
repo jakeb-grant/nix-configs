@@ -15,46 +15,10 @@
   # services.xserver.displayManager.gdm.enable = true;
   # services.displayManager.sddm.enable = true;
 
-  # Essential Wayland/Hyprland packages
-  environment.systemPackages = with pkgs; [
-    # Terminal emulator (choose one or multiple)
-    kitty
-    # alacritty
-    # foot
+  # Note: User packages (terminal, launcher, etc.) are managed via home-manager
+  # See modules/home/desktop/hyprland/default.nix
 
-    # Application launcher
-    rofi-wayland
-    # wofi
-
-    # Status bar
-    waybar
-
-    # Notification daemon
-    mako
-    libnotify
-
-    # Screenshot utilities
-    grim
-    slurp
-
-    # Clipboard manager
-    wl-clipboard
-
-    # Wallpaper daemon
-    hyprpaper
-    # swaybg
-
-    # Screen locker
-    swaylock
-
-    # File manager
-    xfce.thunar
-
-    # Network management
-    networkmanagerapplet
-  ];
-
-  # XDG portal for screen sharing, file picker, etc.
+  # XDG portal for screen sharing, file picker, etc. (system-level requirement)
   xdg.portal = {
     enable = true;
     extraPortals = with pkgs; [

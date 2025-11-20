@@ -175,11 +175,79 @@ nix flake update
 sudo nixos-rebuild switch --flake .#desktop
 ```
 
-### Add Packages
+### Package Management
 
-**System-wide packages:** Edit `modules/system/core.nix`
+This configuration follows a clear separation of concerns for package management:
 
-**User packages:** Edit `modules/home/default.nix`
+#### Where to Add Packages
+
+**System-Level Packages** (`environment.systemPackages`):
+- Required by ALL users (including root)
+- Needed in emergency/recovery situations
+- Core system functionality
+- **Location:** `modules/system/core.nix`
+- **Examples:** vim, git, curl, wget, htop
+
+**User CLI Tools** (`home.packages`):
+- Terminal-based utilities and development tools
+- Used in both GUI and non-GUI environments
+- **Location:** `modules/home/default.nix`
+- **Examples:** ripgrep, fd, bat, neovim, tmux, btop
+
+**GUI Applications** (`home.packages` in desktop modules):
+- Applications that require a desktop environment
+- Shared across all desktop environments
+- **Location:** `modules/home/desktop/common/default.nix`
+- **Examples:** firefox, vscode, discord, gimp
+
+**Desktop-Specific Packages** (`home.packages` in DE modules):
+- Tools specific to a particular desktop environment
+- **Plasma:** `modules/home/desktop/plasma/default.nix`
+- **Hyprland:** `modules/home/desktop/hyprland/default.nix`
+- **Examples:** waybar, rofi, kitty (for Hyprland)
+
+#### Decision Tree
+
+```
+Does root or the system need this package?
+├─ YES → modules/system/core.nix
+└─ NO → Is it a GUI application?
+    ├─ YES → Does it require a specific DE?
+    │   ├─ YES → modules/home/desktop/{plasma,hyprland}/default.nix
+    │   └─ NO → modules/home/desktop/common/default.nix
+    └─ NO → modules/home/default.nix (CLI tools)
+```
+
+#### Examples
+
+**Adding Discord:**
+```nix
+# modules/home/desktop/common/default.nix
+home.packages = with pkgs; [
+  firefox
+  vscode
+  discord  # Add here
+];
+```
+
+**Adding a terminal tool:**
+```nix
+# modules/home/default.nix
+home.packages = with pkgs; [
+  ripgrep
+  jq  # Add here
+];
+```
+
+**Adding a system utility:**
+```nix
+# modules/system/core.nix
+environment.systemPackages = with pkgs; [
+  vim
+  git
+  pciutils  # Add here
+];
+```
 
 ### Useful Aliases (after first rebuild)
 
@@ -191,9 +259,33 @@ sudo nixos-rebuild switch --flake .#desktop
 
 ### Change Desktop Environment
 
-Edit `modules/system/desktop.nix`:
-- Comment out KDE sections
-- Uncomment Hyprland sections
+This configuration uses a modular desktop environment system with a convenient switcher.
+
+**Quick Method** (recommended):
+
+Edit your host configuration (`hosts/desktop/default.nix` or `hosts/laptop/default.nix`):
+
+```nix
+desktop-environment = {
+  enable = true;
+  de = "plasma";  # Change to "hyprland" or "none"
+};
+```
+
+Then rebuild:
+```bash
+sudo nixos-rebuild switch --flake .#desktop
+```
+
+**Available Options:**
+- `"plasma"` - KDE Plasma 6 with SDDM (default)
+- `"hyprland"` - Hyprland Wayland compositor
+- `"none"` - No desktop environment (server/minimal)
+
+**What Changes:**
+- System configuration automatically loads the correct DE modules
+- Home-manager automatically configures DE-specific settings
+- Desktop-specific packages are installed/removed as needed
 
 ### GPU Configurations
 
