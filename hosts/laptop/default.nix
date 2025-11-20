@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 
 let
   # Import personal configuration (gitignored, created by setup.sh)
@@ -12,6 +12,7 @@ let
         gitName = "";
         timezone = "America/Denver";
       };
+      desktopEnvironment = "plasma";  # Default desktop environment
     };
 in
 {
@@ -24,11 +25,23 @@ in
     ../../modules/system/core.nix
     ../../modules/system/desktop-environment.nix
 
-    # Laptop-specific hardware (Hybrid Intel + NVIDIA)
-    ../../modules/system/hardware/nvidia-prime.nix
+    # Desktop environment modules (always imported)
+    ../../modules/system/desktop/base.nix
 
     # Home manager configuration
     ../../modules/home
+  ]
+  # Conditionally import desktop-specific modules based on secrets
+  ++ lib.optionals ((secrets.desktopEnvironment or "plasma") == "plasma") [
+    ../../modules/system/desktop/plasma.nix
+  ]
+  ++ lib.optionals ((secrets.desktopEnvironment or "plasma") == "hyprland") [
+    ../../modules/system/desktop/hyprland.nix
+  ]
+  # Hardware modules
+  ++ [
+    # Laptop-specific hardware (Hybrid Intel + NVIDIA)
+    ../../modules/system/hardware/nvidia-prime.nix
   ];
 
   # Hostname
@@ -46,10 +59,10 @@ in
     gitName = secrets.personalInfo.gitName;
   };
 
-  # Desktop environment configuration
+  # Desktop environment configuration (from secrets - single source of truth)
   desktop-environment = {
     enable = true;
-    de = "plasma";  # Options: "plasma", "hyprland", "none"
+    de = secrets.desktopEnvironment or "plasma";
   };
 
   # Laptop-specific configuration can go here
