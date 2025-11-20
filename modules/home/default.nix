@@ -1,17 +1,23 @@
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 
 {
   # Configure home-manager using main-user module
-  home-manager.users.${config.main-user.userName} = { pkgs, ... }: {
+  home-manager.users.${config.main-user.userName} = { pkgs, osConfig, ... }: {
     imports = [
       ./programs/shell.nix
       ./programs/git.nix
+    ] ++ lib.optionals (osConfig.desktop-environment.enable or false) [
+      ./desktop/common
+    ] ++ lib.optionals ((osConfig.desktop-environment.de or "none") == "plasma") [
+      ./desktop/plasma
+    ] ++ lib.optionals ((osConfig.desktop-environment.de or "none") == "hyprland") [
+      ./desktop/hyprland
     ];
 
     # Home Manager version
     home.stateVersion = "25.05";
 
-    # User packages
+    # User packages (CLI tools only, GUI apps in desktop/common)
     home.packages = with pkgs; [
       # Terminal utilities
       ripgrep
@@ -21,12 +27,8 @@
       fzf
       tmux
 
-      # Development tools
+      # Terminal-based development tools
       neovim
-      vscode
-
-      # Web browser
-      firefox
 
       # System monitoring
       btop

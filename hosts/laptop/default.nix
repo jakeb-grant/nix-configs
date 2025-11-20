@@ -22,7 +22,7 @@ in
     # Shared system modules
     ../../modules/system/user.nix
     ../../modules/system/core.nix
-    ../../modules/system/desktop.nix
+    ../../modules/system/desktop-environment.nix
 
     # Laptop-specific hardware (Hybrid Intel + NVIDIA)
     ../../modules/system/hardware/nvidia-prime.nix
@@ -44,6 +44,12 @@ in
     description = secrets.personalInfo.fullName;
     email = secrets.personalInfo.email;
     gitName = secrets.personalInfo.gitName;
+  };
+
+  # Desktop environment configuration
+  desktop-environment = {
+    enable = true;
+    de = "plasma";  # Options: "plasma", "hyprland", "none"
   };
 
   # Laptop-specific configuration can go here
