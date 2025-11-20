@@ -135,6 +135,38 @@ else
     echo -e "${YELLOW}You'll need to generate it with: sudo nixos-generate-config${NC}"
 fi
 
+# Commit changes to git
+echo ""
+echo -e "${YELLOW}Committing changes to git...${NC}"
+
+# Set temporary git config if not already configured
+if ! git config user.name > /dev/null 2>&1; then
+    git config user.name "NixOS Setup Script"
+fi
+
+if ! git config user.email > /dev/null 2>&1; then
+    git config user.email "setup@localhost"
+fi
+
+# Add all changes including gitignored files (like hardware-configuration.nix)
+git add -f -A
+
+# Commit with descriptive message
+COMMIT_MSG="Configure $HOST: $USERNAME ($FULLNAME)
+
+- Set timezone: $TIMEZONE
+- Set stateVersion: $STATE_VERSION
+- Added hardware-configuration.nix
+- Configured user settings"
+
+git commit -m "$COMMIT_MSG" > /dev/null 2>&1
+
+if [ $? -eq 0 ]; then
+    echo -e "${GREEN}✓ Changes committed to git${NC}"
+else
+    echo -e "${YELLOW}⚠ No changes to commit or commit failed${NC}"
+fi
+
 # Show summary
 echo ""
 echo -e "${GREEN}Configuration complete!${NC}"
@@ -151,9 +183,10 @@ if [ -n "$TIMEZONE" ]; then
 fi
 echo "StateVersion: $STATE_VERSION"
 echo ""
-echo -e "${YELLOW}Next steps:${NC}"
-echo "1. Review the changes in $HOST_FILE and hosts/$HOST/hardware-configuration.nix"
-echo "2. Run: sudo nixos-rebuild switch --flake .#$HOST"
+echo -e "${GREEN}All changes have been committed to git!${NC}"
+echo ""
+echo -e "${YELLOW}Next step:${NC}"
+echo "Run: sudo nixos-rebuild switch --flake .#$HOST"
 echo ""
 echo -e "${YELLOW}To restore backups if needed:${NC}"
 echo "  mv $HOST_FILE.backup $HOST_FILE"
