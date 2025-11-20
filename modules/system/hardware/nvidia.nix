@@ -33,7 +33,7 @@
 
     extraPackages = with pkgs; [
       nvidia-vaapi-driver  # VA-API support for NVIDIA
-      vaapiVdpau           # VDPAU backend for VA-API
+      libva-vdpau-driver   # VDPAU backend for VA-API
       libvdpau-va-gl       # VDPAU driver with VA-GL backend
     ];
   };
