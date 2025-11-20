@@ -37,7 +37,7 @@
 
     # Session variables
     home.sessionVariables = {
-      EDITOR = "vim";
+      EDITOR = "zed-editor";
     };
 
     # Note: Unfree packages are allowed system-wide in modules/system/core.nix
