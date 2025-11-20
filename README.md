@@ -314,7 +314,7 @@ Edit your host configuration (`hosts/desktop/default.nix` or `hosts/laptop/defau
 ```nix
 desktop-environment = {
   enable = true;
-  de = "plasma";  # Change to "hyprland" or "none"
+  de = "plasma";  # Change to "hyprland"
 };
 ```
 
@@ -326,7 +326,6 @@ sudo nixos-rebuild switch --flake .#desktop
 **Available Options:**
 - `"plasma"` - KDE Plasma 6 with SDDM (default)
 - `"hyprland"` - Hyprland Wayland compositor
-- `"none"` - No desktop environment (server/minimal)
 
 **What Changes:**
 - System configuration automatically loads the correct DE modules

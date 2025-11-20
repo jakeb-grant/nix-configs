@@ -65,7 +65,6 @@ echo ""
 echo "Desktop Environment:"
 echo "  1) Plasma (KDE Plasma 6)"
 echo "  2) Hyprland (Wayland compositor)"
-echo "  3) None (minimal/server)"
 read -p "Choose desktop environment [1]: " DE_CHOICE
 DE_CHOICE=${DE_CHOICE:-1}
 
@@ -75,9 +74,6 @@ case "$DE_CHOICE" in
         ;;
     2)
         DESKTOP_ENV="hyprland"
-        ;;
-    3)
-        DESKTOP_ENV="none"
         ;;
     *)
         echo -e "${YELLOW}Invalid choice, defaulting to Plasma${NC}"

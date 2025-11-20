@@ -8,13 +8,12 @@
     enable = lib.mkEnableOption "enable desktop environment module";
 
     de = lib.mkOption {
-      type = lib.types.enum [ "plasma" "hyprland" "none" ];
+      type = lib.types.enum [ "plasma" "hyprland" ];
       default = "plasma";
       description = ''
         Desktop environment to use:
         - plasma: KDE Plasma 6 with SDDM
         - hyprland: Hyprland Wayland compositor
-        - none: No desktop environment (server/minimal)
 
         Note: This option is automatically set from secrets.nix in host configs.
         The desktop environment choice in secrets.nix controls both:
