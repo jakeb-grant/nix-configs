@@ -41,16 +41,17 @@ This guide assumes you've already completed a fresh NixOS installation using the
 
 After completing the graphical installation and logging into your new NixOS system:
 
-#### Step 1: Enable Flakes
+#### Step 1: Enable Flakes and Install Git
 
-Flakes are experimental and not enabled by default. Enable them temporarily:
+Flakes are experimental and not enabled by default. You'll also need git to clone this repository:
 
 ```bash
 # Edit the system configuration
 sudo nano /etc/nixos/configuration.nix
 
-# Add this line anywhere in the configuration block:
+# Add these lines anywhere in the configuration block:
 nix.settings.experimental-features = [ "nix-command" "flakes" ];
+environment.systemPackages = with pkgs; [ git ];
 
 # Apply the change
 sudo nixos-rebuild switch
