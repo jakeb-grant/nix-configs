@@ -40,7 +40,10 @@ echo -e "${YELLOW}Please enter your user information:${NC}"
 echo ""
 
 # Collect user information
-read -p "Username (e.g., john): " USERNAME
+CURRENT_USER=$(whoami)
+read -p "Username [${CURRENT_USER}]: " USERNAME
+USERNAME=${USERNAME:-$CURRENT_USER}
+
 read -p "Full Name (e.g., John Doe): " FULLNAME
 read -p "Email (e.g., john@example.com): " EMAIL
 read -p "Git Name (leave empty to use Full Name): " GITNAME
@@ -54,7 +57,8 @@ echo "  - America/Denver"
 echo "  - America/Los_Angeles"
 echo "  - Europe/London"
 echo "  - Europe/Paris"
-read -p "Timezone (e.g., America/Denver): " TIMEZONE
+read -p "Timezone [America/Denver]: " TIMEZONE
+TIMEZONE=${TIMEZONE:-America/Denver}
 
 # Detect stateVersion from existing system
 echo ""
@@ -116,6 +120,21 @@ echo -e "${GREEN}✓ Updated system.stateVersion in modules/system/core.nix${NC}
 sed -i "s|home.stateVersion = \".*\";|home.stateVersion = \"$STATE_VERSION\";|" "modules/home/default.nix"
 echo -e "${GREEN}✓ Updated home.stateVersion in modules/home/default.nix${NC}"
 
+# Copy hardware configuration
+echo ""
+echo -e "${YELLOW}Copying hardware configuration...${NC}"
+HARDWARE_SRC="/etc/nixos/hardware-configuration.nix"
+HARDWARE_DEST="hosts/$HOST/hardware-configuration.nix"
+
+if [ -f "$HARDWARE_SRC" ]; then
+    sudo cp "$HARDWARE_SRC" "$HARDWARE_DEST"
+    sudo chown $USER:$USER "$HARDWARE_DEST"
+    echo -e "${GREEN}✓ Copied $HARDWARE_SRC to $HARDWARE_DEST${NC}"
+else
+    echo -e "${RED}⚠ Warning: $HARDWARE_SRC not found${NC}"
+    echo -e "${YELLOW}You'll need to generate it with: sudo nixos-generate-config${NC}"
+fi
+
 # Show summary
 echo ""
 echo -e "${GREEN}Configuration complete!${NC}"
@@ -133,9 +152,8 @@ fi
 echo "StateVersion: $STATE_VERSION"
 echo ""
 echo -e "${YELLOW}Next steps:${NC}"
-echo "1. Review the changes in $HOST_FILE"
-echo "2. Copy hardware-configuration.nix to hosts/$HOST/"
-echo "3. Run: sudo nixos-rebuild switch --flake .#$HOST"
+echo "1. Review the changes in $HOST_FILE and hosts/$HOST/hardware-configuration.nix"
+echo "2. Run: sudo nixos-rebuild switch --flake .#$HOST"
 echo ""
 echo -e "${YELLOW}To restore backups if needed:${NC}"
 echo "  mv $HOST_FILE.backup $HOST_FILE"
