@@ -38,8 +38,8 @@
     home.sessionVariables = {
       EDITOR = "vim";
     } // lib.optionalAttrs
-      ((osConfig.desktop-environment.de or "none") != "none") {
-      # Enable Wayland for Firefox when using Wayland-capable desktop environments
+      (lib.elem (osConfig.desktop-environment.de or "none") ["plasma" "hyprland"]) {
+      # Enable Wayland for Firefox (only for Wayland-capable DEs)
       MOZ_ENABLE_WAYLAND = "1";
     };
 
