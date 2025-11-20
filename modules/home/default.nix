@@ -1,8 +1,8 @@
 { config, pkgs, ... }:
 
 {
-  # Configure home-manager
-  home-manager.users.user = { pkgs, ... }: {  # Change 'user' to your username
+  # Configure home-manager using main-user module
+  home-manager.users.${config.main-user.userName} = { pkgs, ... }: {
     imports = [
       ./programs/shell.nix
       ./programs/git.nix

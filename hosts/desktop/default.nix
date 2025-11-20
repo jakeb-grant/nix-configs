@@ -6,6 +6,7 @@
     ./hardware-configuration.nix
 
     # Shared system modules
+    ../../modules/system/user.nix
     ../../modules/system/core.nix
     ../../modules/system/desktop.nix
 
@@ -19,6 +20,14 @@
   # Hostname
   networking.hostName = "desktop";
 
+  # Main user configuration
+  main-user = {
+    enable = true;
+    userName = "user";  # Change this to your username
+    description = "Main User";  # Change this to your full name
+    email = "your.email@example.com";  # Change this to your email
+    gitName = "";  # Optional: Leave empty to use description for git
+  };
+
   # Desktop-specific configuration can go here
-  # For now, everything is shared in the modules
 }
