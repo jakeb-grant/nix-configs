@@ -1,6 +1,9 @@
 # Hardware configurations (generated per-machine)
 hosts/*/hardware-configuration.nix
 
+# Personal configuration (gitignored, not pushed)
+hosts/*/secrets.nix
+
 # Build results
 result
 result-*
