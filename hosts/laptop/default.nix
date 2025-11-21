@@ -2,6 +2,7 @@
 
 let
   # Import personal configuration (gitignored, created by setup.sh)
+  # This provides backward compatibility during transition to user-preferences module
   secrets = if builtins.pathExists ./secrets.nix
     then import ./secrets.nix
     else {
@@ -22,6 +23,7 @@ in
 
     # Shared system modules
     ../../modules/system/user.nix
+    ../../modules/system/user-preferences.nix  # New preferences module
     ../../modules/system/core.nix
     ../../modules/system/desktop-environment.nix
 
@@ -31,11 +33,12 @@ in
     # Home manager configuration
     ../../modules/home
   ]
-  # Conditionally import desktop-specific modules based on secrets
-  ++ lib.optionals ((secrets.desktopEnvironment or "plasma") == "plasma") [
+  # Conditionally import desktop-specific modules
+  # During transition: reads from user-preferences which falls back to secrets.nix
+  ++ lib.optionals (config.user-preferences.desktopEnvironment == "plasma") [
     ../../modules/system/desktop/plasma.nix
   ]
-  ++ lib.optionals ((secrets.desktopEnvironment or "plasma") == "hyprland") [
+  ++ lib.optionals (config.user-preferences.desktopEnvironment == "hyprland") [
     ../../modules/system/desktop/hyprland.nix
   ]
   # Hardware modules
@@ -47,22 +50,21 @@ in
   # Hostname
   networking.hostName = "laptop";
 
-  # Timezone from secrets
-  time.timeZone = secrets.personalInfo.timezone;
-
-  # Main user configuration from secrets
-  main-user = {
+  # Configure user preferences (non-sensitive data)
+  # Falls back to secrets.nix if it exists, otherwise uses defaults
+  user-preferences = {
     enable = true;
     userName = secrets.personalInfo.userName;
-    description = secrets.personalInfo.fullName;
-    email = secrets.personalInfo.email;
-    gitName = secrets.personalInfo.gitName;
+    fullName = secrets.personalInfo.fullName;
+    timezone = secrets.personalInfo.timezone;
+    desktopEnvironment = secrets.desktopEnvironment or "plasma";
   };
 
-  # Desktop environment configuration (from secrets - single source of truth)
-  desktop-environment = {
-    enable = true;
-    de = secrets.desktopEnvironment or "plasma";
+  # Sensitive data still configured directly from secrets.nix
+  # This will be migrated to agenix in a future step
+  main-user = {
+    email = secrets.personalInfo.email;
+    gitName = secrets.personalInfo.gitName;
   };
 
   # Laptop-specific configuration can go here
