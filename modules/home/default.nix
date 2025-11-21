@@ -55,7 +55,7 @@
 
     # Session variables
     home.sessionVariables = {
-      EDITOR = "zed --wait";
+      EDITOR = "zeditor --wait";
     };
 
     # Note: Unfree packages are allowed system-wide in modules/system/core.nix

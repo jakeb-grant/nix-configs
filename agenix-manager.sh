@@ -16,11 +16,13 @@ SECRETS_DIR="secrets"
 SECRETS_NIX="$SECRETS_DIR/secrets.nix"
 ADMIN_KEY="$HOME/.ssh/agenix-admin"
 
-# Editor - find a working editor
-if command -v zed &> /dev/null; then
-    AGENIX_EDITOR="zed --wait"
+# Editor - use $EDITOR from environment, or detect a working editor
+if [ -n "$EDITOR" ]; then
+    AGENIX_EDITOR="$EDITOR"
 elif command -v zeditor &> /dev/null; then
     AGENIX_EDITOR="zeditor --wait"
+elif command -v zed &> /dev/null; then
+    AGENIX_EDITOR="zed --wait"
 elif command -v nano &> /dev/null; then
     AGENIX_EDITOR="nano"
 elif command -v vim &> /dev/null; then
