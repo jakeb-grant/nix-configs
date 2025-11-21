@@ -8,9 +8,14 @@
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    agenix = {
+      url = "github:ryantm/agenix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = { self, nixpkgs, home-manager, ... }@inputs: {
+  outputs = { self, nixpkgs, home-manager, agenix, ... }@inputs: {
     nixosConfigurations = {
       # Desktop configuration
       desktop = nixpkgs.lib.nixosSystem {
@@ -18,9 +23,11 @@
         modules = [
           ./hosts/desktop
           home-manager.nixosModules.home-manager
+          agenix.nixosModules.default
           {
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
+            environment.systemPackages = [ agenix.packages.x86_64-linux.default ];
           }
         ];
       };
@@ -31,9 +38,11 @@
         modules = [
           ./hosts/laptop
           home-manager.nixosModules.home-manager
+          agenix.nixosModules.default
           {
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
+            environment.systemPackages = [ agenix.packages.x86_64-linux.default ];
           }
         ];
       };
