@@ -8,10 +8,15 @@
   home.packages = with pkgs; [
     # Web browser
     firefox
-
-    # Development tools
-    zed-editor
   ];
+
+  programs.zed-editor = {
+    enable = true;
+    extensions = [ "catppuccin-blur" "svelte" ];
+    userSettings = {
+      base_keymap = "VSCode"
+    };
+  };
 
   # Firefox configuration
   home.sessionVariables = lib.mkIf
