@@ -62,7 +62,7 @@
   nixpkgs.config.allowUnfree = true;
 
   # Remote access
-  # services.openssh.enable = true;
+  services.openssh.enable = true;
 
   # Firewall configuration
   # networking.firewall.allowedTCPPorts = [ ... ];
