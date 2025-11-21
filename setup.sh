@@ -46,7 +46,8 @@ USERNAME=${USERNAME:-$CURRENT_USER}
 
 read -p "Full Name (e.g., John Doe): " FULLNAME
 read -p "Email (e.g., john@example.com): " EMAIL
-read -p "Git Name (leave empty to use Full Name): " GITNAME
+read -p "Git Name [$FULLNAME]: " GITNAME
+GITNAME=${GITNAME:-$FULLNAME}
 
 # Set timezone
 echo ""
