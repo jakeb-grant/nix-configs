@@ -15,7 +15,7 @@ in
 
     fullName = lib.mkOption {
       type = lib.types.str;
-      default = "jacob grant";
+      default = "jacob";
       description = "Full name/description for the user account";
     };
 
@@ -35,6 +35,18 @@ in
         - hyprland: Hyprland Wayland compositor
       '';
     };
+
+    email = lib.mkOption {
+      type = lib.types.str;
+      default = "86214494+jakeb-grant@users.noreply.github.com";
+      description = "Email address for git configuration";
+    };
+
+    gitName = lib.mkOption {
+      type = lib.types.str;
+      default = "jacob";
+      description = "Name to use for git commits";
+    };
   };
 
   config = lib.mkIf cfg.enable {
@@ -42,11 +54,12 @@ in
     time.timeZone = cfg.timezone;
 
     # Forward preferences to main-user module
-    # Note: email and gitName are still configured separately (from secrets for now)
     main-user = {
       enable = true;
       userName = cfg.userName;
       description = cfg.fullName;
+      email = cfg.email;
+      gitName = cfg.gitName;
     };
 
     # Forward desktop environment preference

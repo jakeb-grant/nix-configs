@@ -11,12 +11,12 @@ let
   everyone = [ admin ] ++ allHosts;
 in
 {
-  # User sensitive information (shared across all hosts)
-  "user-email.age".publicKeys = everyone;
-  "user-gitname.age".publicKeys = everyone;
+  # Agenix infrastructure is ready for truly sensitive secrets
+  # Email and gitName are in user-preferences.nix (not sensitive enough for encryption)
 
-  # Future secrets can go here as needed
+  # Add secrets here as needed:
   # "github-token.age".publicKeys = everyone;
   # "ssh-private-key.age".publicKeys = everyone;
   # "api-keys.age".publicKeys = everyone;
+  # "wifi-password.age".publicKeys = everyone;
 }
