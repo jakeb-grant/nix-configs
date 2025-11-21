@@ -28,12 +28,26 @@
       tmux
 
       # Terminal-based development tools
-      claude-code
-      gh
+      gh        # github cli
+      fnm       # fast node manager
 
       # System monitoring
       btop
     ];
+
+    programs.claude-code = {
+      enable = true;
+      mcpServers = {
+        svelte = {
+          type = "stdio";
+          command = "npx";
+          args = [
+            "-y"
+            "@sveltejs/mcp"
+          ];
+        };
+      };
+    };
 
     # Session variables
     home.sessionVariables = {
