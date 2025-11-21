@@ -33,6 +33,10 @@
 
       # System monitoring
       btop
+
+      # System utilities for claude-code sandboxing
+      bubblewrap
+      socat
     ];
 
     programs.claude-code = {
