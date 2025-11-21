@@ -9,13 +9,13 @@ in
 
     userName = lib.mkOption {
       type = lib.types.str;
-      default = "user";
+      default = "jacob";
       description = "Primary username for the system";
     };
 
     fullName = lib.mkOption {
       type = lib.types.str;
-      default = "Main User";
+      default = "jacob grant";
       description = "Full name/description for the user account";
     };
 
