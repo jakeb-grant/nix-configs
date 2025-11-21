@@ -19,7 +19,7 @@ in
       type = lib.types.str;
     };
 
-    email = lib.mkOption {
+    gitEmail = lib.mkOption {
       default = "";
       description = "Email address for git configuration";
       type = lib.types.str;

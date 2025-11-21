@@ -12,10 +12,10 @@ in
 
     settings = {
       user.name = gitUserName;
-      user.email = mainUser.email;
+      user.email = mainUser.gitEmail;
       init.defaultBranch = "main";
       pull.rebase = true;
-      core.editor = "vim";
+      core.editor = "zed-editor";
     };
   };
 }

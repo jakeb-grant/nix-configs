@@ -36,7 +36,7 @@ in
       '';
     };
 
-    email = lib.mkOption {
+    gitEmail = lib.mkOption {
       type = lib.types.str;
       default = "86214494+jakeb-grant@users.noreply.github.com";
       description = "Email address for git configuration";
@@ -58,7 +58,7 @@ in
       enable = true;
       userName = cfg.userName;
       description = cfg.fullName;
-      email = cfg.email;
+      gitEmail = cfg.gitEmail;
       gitName = cfg.gitName;
     };
 

@@ -123,12 +123,16 @@ CURRENT_USERNAME=$(grep -A4 'userName = lib.mkOption' "$PREFS_FILE" | grep 'defa
 CURRENT_FULLNAME=$(grep -A4 'fullName = lib.mkOption' "$PREFS_FILE" | grep 'default =' | sed 's/.*default = "\(.*\)";.*/\1/')
 CURRENT_TIMEZONE=$(grep -A4 'timezone = lib.mkOption' "$PREFS_FILE" | grep 'default =' | sed 's/.*default = "\(.*\)";.*/\1/')
 CURRENT_DESKTOP=$(grep -A4 'desktopEnvironment = lib.mkOption' "$PREFS_FILE" | grep 'default =' | sed 's/.*default = "\(.*\)";.*/\1/')
+CURRENT_GITEMAIL=$(grep -A4 'gitEmail = lib.mkOption' "$PREFS_FILE" | grep 'default =' | sed 's/.*default = "\(.*\)";.*/\1/')
+CURRENT_GITNAME=$(grep -A4 'gitName = lib.mkOption' "$PREFS_FILE" | grep 'default =' | sed 's/.*default = "\(.*\)";.*/\1/')
 
 echo "Current defaults:"
 echo "  - userName: $CURRENT_USERNAME"
 echo "  - fullName: $CURRENT_FULLNAME"
 echo "  - timezone: $CURRENT_TIMEZONE"
 echo "  - desktopEnvironment: $CURRENT_DESKTOP"
+echo "  - gitEmail: $CURRENT_GITEMAIL"
+echo "  - gitName: $CURRENT_GITNAME"
 echo ""
 read -p "Would you like to update these defaults now? (y/n): " update_prefs
 
@@ -170,6 +174,13 @@ if [ "$update_prefs" = "y" ] || [ "$update_prefs" = "Y" ]; then
             ;;
     esac
 
+    echo ""
+    read -p "Git Email [$CURRENT_GITEMAIL]: " GITEMAIL
+    GITEMAIL=${GITEMAIL:-$CURRENT_GITEMAIL}
+
+    read -p "Git Name [$CURRENT_GITNAME]: " GITNAME
+    GITNAME=${GITNAME:-$CURRENT_GITNAME}
+
     # Update user-preferences.nix
     echo ""
     echo -e "${YELLOW}Updating modules/system/user-preferences.nix...${NC}"
@@ -183,6 +194,8 @@ if [ "$update_prefs" = "y" ] || [ "$update_prefs" = "Y" ]; then
     sed -i "/fullName = lib.mkOption/,/};/{s|default = \"$CURRENT_FULLNAME\";|default = \"$FULLNAME\";|}" modules/system/user-preferences.nix
     sed -i "/timezone = lib.mkOption/,/default /{s|default = \"$CURRENT_TIMEZONE\";|default = \"$TIMEZONE\";|}" modules/system/user-preferences.nix
     sed -i "/desktopEnvironment = lib.mkOption/,/default /{s|default = \"$CURRENT_DESKTOP\";|default = \"$DESKTOP_ENV\";|}" modules/system/user-preferences.nix
+    sed -i "/gitEmail = lib.mkOption/,/};/{s|default = \"$CURRENT_GITEMAIL\";|default = \"$GITEMAIL\";|}" modules/system/user-preferences.nix
+    sed -i "/gitName = lib.mkOption/,/};/{s|default = \"$CURRENT_GITNAME\";|default = \"$GITNAME\";|}" modules/system/user-preferences.nix
 
     echo -e "${GREEN}✓ Updated user-preferences.nix${NC}"
 else
