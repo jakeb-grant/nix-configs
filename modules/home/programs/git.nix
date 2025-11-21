@@ -15,7 +15,7 @@ in
       user.email = mainUser.gitEmail;
       init.defaultBranch = "main";
       pull.rebase = true;
-      core.editor = "zed-editor";
+      core.editor = "zed --wait";
     };
   };
 }
