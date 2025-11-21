@@ -14,7 +14,7 @@
     enable = true;
     extensions = [ "catppuccin-blur" "svelte" ];
     userSettings = {
-      base_keymap = "VSCode"
+      base_keymap = "VSCode";
     };
   };
 
