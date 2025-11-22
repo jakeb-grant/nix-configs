@@ -36,6 +36,8 @@
       features = {
         edit_prediction_provider = "zed";
       };
+      # Tell Zed to use direnv and direnv can use a flake.nix environment
+      load_direnv = "shell_hook";
       lsp = {
         nix = {
           binary = {
