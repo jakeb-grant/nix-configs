@@ -5,11 +5,13 @@ Multi-host NixOS configuration using flakes and home-manager.
 ## Structure
 
 ```
-nix-config/
+nix-configs/
 ├── flake.nix                    # Main entry point
 ├── flake.lock                   # Lock file (committed)
 ├── .gitignore
 ├── README.md
+├── init.sh                      # Host initialization script
+├── secrets.sh                   # Interactive secret management tool
 │
 ├── hosts/
 │   ├── desktop/                 # Desktop configuration
@@ -19,17 +21,31 @@ nix-config/
 │       ├── default.nix
 │       └── hardware-configuration.nix  # Generated, gitignored
 │
+├── secrets/                     # Agenix encrypted secrets
+│   ├── secrets.nix              # Public keys and secret definitions
+│   └── *.age                    # Encrypted secret files (safe to commit)
+│
 └── modules/
     ├── system/
-    │   ├── user.nix             # Main user module (centralized user config)
+    │   ├── user.nix             # Main user module
+    │   ├── user-preferences.nix # Centralized user preferences
     │   ├── core.nix             # Core system configuration
-    │   ├── desktop.nix          # Desktop environment (KDE Plasma)
+    │   ├── desktop-environment.nix  # Desktop environment selector
+    │   ├── agenix-secrets.nix   # Secret declarations for agenix
+    │   ├── desktop/
+    │   │   ├── base.nix         # Common desktop settings
+    │   │   ├── plasma.nix       # KDE Plasma 6 configuration
+    │   │   └── hyprland.nix     # Hyprland Wayland compositor
     │   └── hardware/
     │       ├── nvidia.nix       # NVIDIA GPU configuration (desktop)
-    │       ├── nvidia-prime.nix # NVIDIA Prime/Optimus (laptop hybrid graphics)
+    │       ├── nvidia-prime.nix # NVIDIA Prime/Optimus (laptop hybrid)
     │       └── amd.nix          # AMD GPU configuration (alternative)
     └── home/
         ├── default.nix          # Home-manager entry point
+        ├── desktop/             # Desktop environment configs
+        │   ├── common/          # Shared across all DEs
+        │   ├── plasma/          # Plasma-specific
+        │   └── hyprland/        # Hyprland-specific
         └── programs/
             ├── shell.nix        # Bash configuration
             └── git.nix          # Git configuration
@@ -73,61 +89,92 @@ git clone https://github.com/yourusername/nix-configs
 cd nix-configs
 ```
 
-#### Step 3: Run Setup Script
+#### Step 3: Run Initialization Script
 
-Run the automated setup script to configure everything:
+Run the automated initialization script to configure everything:
 
 ```bash
 cd nix-configs
-./setup-user.sh
+./init.sh
 ```
 
 The script will:
 - Detect your system's stateVersion automatically
-- Ask for your user information (username, full name, email, etc.)
-- Copy hardware-configuration.nix to the correct host directory
-- Update all configuration files
+- Copy/generate hardware-configuration.nix to the correct host directory
+- Optionally configure user preferences (or use defaults)
+- Set up git visibility for flake-required files
 
 **What the script asks for:**
 - Which host to configure (desktop or laptop)
-- Username
-- Full name
-- Email address
-- Git name (optional)
-- Timezone
+- Whether to update user preferences (optional):
+  - Username (defaults to current user)
+  - Full name
+  - Timezone
+  - Desktop environment (Plasma or Hyprland)
+  - Git email
+  - Git name
 
 **Alternative: Manual Configuration**
 
-If you prefer to configure manually instead of using the setup script:
+If you prefer to configure manually instead of using the init script:
 
 1. **Copy hardware configuration:**
    ```bash
    # For desktop
    sudo cp /etc/nixos/hardware-configuration.nix ~/nix-configs/hosts/desktop/
+   sudo chown $USER: ~/nix-configs/hosts/desktop/hardware-configuration.nix
 
    # For laptop
    sudo cp /etc/nixos/hardware-configuration.nix ~/nix-configs/hosts/laptop/
+   sudo chown $USER: ~/nix-configs/hosts/laptop/hardware-configuration.nix
    ```
 
-2. **Edit your host configuration file** (`hosts/desktop/default.nix` or `hosts/laptop/default.nix`):
+2. **Edit user preferences** (`modules/system/user-preferences.nix`):
 ```nix
-main-user = {
-  enable = true;
-  userName = "yourname";              # Your actual username
-  description = "Your Full Name";     # Your full name
-  email = "you@example.com";          # Your email for git
-  gitName = "";                       # Optional: git name (uses description if empty)
+userName = lib.mkOption {
+  type = lib.types.str;
+  default = "jacob";           # Change to your username
+  description = "Primary username for the system";
+};
+
+fullName = lib.mkOption {
+  type = lib.types.str;
+  default = "jacob grant";     # Change to your full name
+  description = "Full name/description for the user account";
+};
+
+gitEmail = lib.mkOption {
+  type = lib.types.str;
+  default = "you@example.com"; # Change to your git email
+  description = "Email address for git configuration";
+};
+
+gitName = lib.mkOption {
+  type = lib.types.str;
+  default = "jacob";           # Change to your git name
+  description = "Name to use for git commits";
+};
+
+timezone = lib.mkOption {
+  type = lib.types.str;
+  default = "America/Denver";  # Change to your timezone
+  description = "System timezone";
+};
+
+desktopEnvironment = lib.mkOption {
+  type = lib.types.enum [ "plasma" "hyprland" ];
+  default = "plasma";          # Or "hyprland"
+  description = "Desktop environment choice";
 };
 ```
 
-**For laptop** (`hosts/laptop/default.nix`):
-- Configure the same `main-user` block as above
+3. **Make hardware-configuration.nix visible to flakes:**
+```bash
+git add -f -N hosts/*/hardware-configuration.nix
+echo "hosts/*/hardware-configuration.nix" >> .git/info/exclude
+```
 
-**Optional customization:**
-- `modules/system/core.nix` - Change `time.timeZone` to your timezone (if not using setup script)
-- `modules/home/programs/shell.nix` - Update alias paths if you cloned to a different location
-
-That's it! All user settings (username, email, git config) are now centralized in one place.
+That's it! All user settings are centralized in `user-preferences.nix` and automatically applied to all hosts.
 
 #### Step 4: Switch to Flake Configuration
 
@@ -287,7 +334,7 @@ User preference:
 ```nix
 # modules/home/default.nix
 home.sessionVariables = {
-  EDITOR = "vim";  # Personal preference
+  EDITOR = "zeditor --wait";  # Personal preference
 };
 ```
 
@@ -301,36 +348,238 @@ home.sessionVariables = {
 - `rebuild-laptop` - Rebuild laptop configuration
 - `update-flake` - Update flake inputs
 
+## User Preferences
+
+All non-sensitive user configuration is centralized in `modules/system/user-preferences.nix`. This module provides default values that apply to all hosts.
+
+### Available Options
+
+```nix
+user-preferences = {
+  userName = "jacob";                                      # System username
+  fullName = "jacob grant";                                # Full name for user account
+  timezone = "America/Denver";                             # System timezone
+  desktopEnvironment = "plasma";                           # "plasma" or "hyprland"
+  gitEmail = "86214494+jakeb-grant@users.noreply.github.com";  # Git commit email
+  gitName = "jacob";                                       # Git commit name
+};
+```
+
+### How It Works
+
+The `user-preferences` module automatically:
+- Creates your user account with the specified settings
+- Sets the system timezone
+- Configures git with your email and name
+- Loads the correct desktop environment modules
+
+### Customizing
+
+**Global defaults** (applies to all hosts):
+Edit `modules/system/user-preferences.nix` to change the default values.
+
+**Per-host overrides** (if needed):
+You can override specific values in a host's `default.nix`:
+```nix
+# hosts/laptop/default.nix
+user-preferences = {
+  enable = true;
+  desktopEnvironment = "hyprland";  # Override just for laptop
+};
+```
+
+## Secret Management
+
+This configuration uses [agenix](https://github.com/ryantm/agenix) for managing sensitive data like API keys, tokens, and passwords.
+
+### Security Model (Hybrid Approach)
+
+**Plaintext (in version control):**
+- User preferences (username, email, timezone, etc.)
+- Not truly "secret" - visible in commits, logs, etc.
+- Stored in `user-preferences.nix`
+
+**Encrypted with Agenix:**
+- API keys, tokens, passwords
+- WiFi passwords, SSH keys
+- Any truly sensitive data
+- Encrypted `.age` files safe to commit
+
+### How Agenix Works
+
+1. **Public keys** (in `secrets/secrets.nix`) - Safe to commit
+2. **Encrypted secrets** (`secrets/*.age`) - Safe to commit
+3. **Private keys** (on machines only) - Never in repo
+4. **Decryption** happens at boot using host's private key
+5. **Secrets available** at `/run/agenix/<secret-name>`
+
+### Security: Why It's Safe
+
+**If someone clones your repo, they get:**
+- ❌ Encrypted `.age` files (can't decrypt without private key)
+- ❌ Public keys in `secrets.nix` (can't use for decryption)
+- ✅ They need a private key to decrypt (which they don't have)
+
+**To add a new host:**
+- Must rekey from a machine that already has access
+- Rekeying requires decrypting first (needs existing private key)
+- Attacker can't rekey without access
+
+### Managing Secrets
+
+Use the interactive `secrets.sh` tool:
+
+```bash
+./secrets.sh
+```
+
+**Options:**
+1. **List secrets** - View all encrypted secrets
+2. **List keys** - Show admin and host keys
+3. **Add new secret** - Create encrypted secret (API key, token, etc.)
+4. **Remove secret** - Delete a secret
+5. **Add new key** - Add admin or host key
+6. **Remove key** - Remove a key and rekey
+7. **Fresh install** - Guided setup for new hosts
+
+### Adding a Secret
+
+```bash
+./secrets.sh
+# Choose: 3) Add new secret
+# Enter secret name (e.g., "github-token")
+# Choose who has access (everyone, admin only, or custom)
+# Editor opens - type your secret value
+# Save and close - encrypted automatically
+```
+
+**Secret file formats:**
+- **Single value**: Just the raw secret (e.g., `ghp_abc123xyz`)
+- **Key=value pairs**: For environment variables
+- **JSON**: For structured data
+
+### Adding a New Host
+
+From a machine that already has access (e.g., laptop with admin key):
+
+```bash
+./secrets.sh
+# Choose: 7) Fresh install (add host key)
+# Enter new host name (e.g., "desktop")
+# Paste host's public key from: sudo cat /etc/ssh/ssh_host_ed25519_key.pub
+# Secrets automatically rekeyed
+# Commit and push
+```
+
+On the new host:
+```bash
+git pull
+sudo nixos-rebuild switch --flake .#desktop
+# Secrets automatically decrypt to /run/agenix/
+```
+
+### Using Secrets in Configuration
+
+Secrets are declared in `modules/system/agenix-secrets.nix`:
+
+```nix
+age.secrets.github-token = {
+  file = ../../secrets/github-token.age;
+  mode = "0440";
+  owner = "root";
+  group = "root";
+};
+```
+
+Access in your configuration:
+```nix
+# Secret file path
+config.age.secrets.github-token.path  # → /run/agenix/github-token
+
+# Example: Use in a service
+services.something = {
+  tokenFile = config.age.secrets.github-token.path;
+};
+```
+
+## Management Tools
+
+### init.sh - Host Initialization
+
+Initialize a new host (copy hardware config, set preferences):
+
+```bash
+./init.sh
+```
+
+**What it does:**
+- Prompts for which host (desktop/laptop)
+- Copies or generates `hardware-configuration.nix`
+- Optionally updates `user-preferences.nix` defaults
+- Sets up git visibility for flake-required files
+
+**When to use:**
+- Setting up a new machine
+- After running `nixos-generate-config` on a fresh install
+
+### secrets.sh - Secret Management
+
+Interactive tool for managing agenix secrets:
+
+```bash
+./secrets.sh
+```
+
+**Features:**
+- Add/remove secrets
+- Add/remove keys (admin and host)
+- Fresh install workflow
+- Automatic rekeying
+- Validates inputs and shows current state
+
 ## Customization
 
 ### Change Desktop Environment
 
-This configuration uses a modular desktop environment system with a convenient switcher.
+This configuration uses a modular desktop environment system.
 
-**Quick Method** (recommended):
+**Method 1: Global Default** (recommended - applies to all hosts):
 
-Edit your host configuration (`hosts/desktop/default.nix` or `hosts/laptop/default.nix`):
+Edit `modules/system/user-preferences.nix`:
 
 ```nix
-desktop-environment = {
+desktopEnvironment = lib.mkOption {
+  type = lib.types.enum [ "plasma" "hyprland" ];
+  default = "plasma";  # Change to "hyprland"
+  description = "Desktop environment choice";
+};
+```
+
+**Method 2: Per-Host Override** (different DE per machine):
+
+Edit your host configuration (`hosts/laptop/default.nix`):
+
+```nix
+user-preferences = {
   enable = true;
-  de = "plasma";  # Change to "hyprland"
+  desktopEnvironment = "hyprland";  # Override just for this host
 };
 ```
 
 Then rebuild:
 ```bash
-sudo nixos-rebuild switch --flake .#desktop
+sudo nixos-rebuild switch --flake .#laptop
 ```
 
 **Available Options:**
 - `"plasma"` - KDE Plasma 6 with SDDM (default)
 - `"hyprland"` - Hyprland Wayland compositor
 
-**What Changes:**
-- System configuration automatically loads the correct DE modules
-- Home-manager automatically configures DE-specific settings
-- Desktop-specific packages are installed/removed as needed
+**What Changes Automatically:**
+- System loads correct DE modules (conditionally with `mkIf`)
+- Home-manager configures DE-specific settings
+- Desktop-specific packages installed/removed as needed
+- All managed through `user-preferences`
 
 ### GPU Configurations
 
@@ -394,6 +643,35 @@ Run `nix flake check` to validate your configuration.
 **Poor battery life (laptop):**
 - Ensure `powerManagement.finegrained = true` in nvidia-prime.nix
 - Verify Intel is being used by default: `glxinfo | grep "OpenGL renderer"`
+
+### Agenix / Secret Management
+
+**Can't decrypt secrets on new host:**
+- Verify host key is in `secrets/secrets.nix`
+- Check host is in `allHosts` group
+- Ensure secrets were rekeyed after adding host
+- Verify host key matches: `sudo cat /etc/ssh/ssh_host_ed25519_key.pub`
+
+**Can't edit secrets:**
+- Need admin key at `~/.ssh/agenix-admin`
+- Or generate new admin key and add to `secrets/secrets.nix`
+- Use `secrets.sh` tool which handles keys automatically
+
+**Editor not found (zeditor: command not found):**
+- Install Zed CLI: Open Zed → Menu → "Install CLI"
+- Or set `EDITOR` to a different editor in `modules/home/default.nix`
+- Script falls back to nano/vim if zeditor unavailable
+
+**Secrets not available after rebuild:**
+- Check `/run/agenix/` directory exists
+- Verify agenix service is running: `systemctl status agenix`
+- Check secret is declared in `modules/system/agenix-secrets.nix`
+- Look for errors: `journalctl -u agenix`
+
+**Can't rekey secrets:**
+- Need a private key that can already decrypt the secrets
+- Must use admin key or existing host key
+- Run from machine with access: `./secrets.sh` → option 5 or 6
 
 ## Resources
 
