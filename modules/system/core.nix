@@ -49,6 +49,7 @@
   ];
 
   # Additional programs
+  programs.nix-ld.enable = true;  # Enable dynamic library resolution for LSPs and other tools
   # programs.mtr.enable = true;  # Network diagnostic tool
   # programs.gnupg.agent = {
   #   enable = true;
