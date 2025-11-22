@@ -139,7 +139,7 @@ userName = lib.mkOption {
 
 fullName = lib.mkOption {
   type = lib.types.str;
-  default = "jacob grant";     # Change to your full name
+  default = "jacob";           # Change to your full name
   description = "Full name/description for the user account";
 };
 
@@ -357,7 +357,7 @@ All non-sensitive user configuration is centralized in `modules/system/user-pref
 ```nix
 user-preferences = {
   userName = "jacob";                                      # System username
-  fullName = "jacob grant";                                # Full name for user account
+  fullName = "jacob";                                      # Full name for user account
   timezone = "America/Denver";                             # System timezone
   desktopEnvironment = "plasma";                           # "plasma" or "hyprland"
   gitEmail = "86214494+jakeb-grant@users.noreply.github.com";  # Git commit email
