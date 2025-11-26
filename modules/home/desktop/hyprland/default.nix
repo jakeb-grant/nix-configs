@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ pkgs, ... }:
 
 {
   # Hyprland home-manager configuration
@@ -14,7 +14,7 @@
 
       # Monitor configuration
       monitor = [
-        ",preferred,auto,1"  # Auto-detect and use preferred resolution
+        ",preferred,auto,1" # Auto-detect and use preferred resolution
       ];
 
       # Keybindings
@@ -132,7 +132,12 @@
         height = 30;
         modules-left = [ "hyprland/workspaces" ];
         modules-center = [ "clock" ];
-        modules-right = [ "network" "pulseaudio" "battery" "tray" ];
+        modules-right = [
+          "network"
+          "pulseaudio"
+          "battery"
+          "tray"
+        ];
 
         "hyprland/workspaces" = {
           format = "{id}";
@@ -144,7 +149,13 @@
 
         battery = {
           format = "{capacity}% {icon}";
-          format-icons = [ "" "" "" "" "" ];
+          format-icons = [
+            ""
+            ""
+            ""
+            ""
+            ""
+          ];
         };
 
         network = {
@@ -156,7 +167,11 @@
           format = "{volume}% {icon}";
           format-muted = "";
           format-icons = {
-            default = [ "" "" "" ];
+            default = [
+              ""
+              ""
+              ""
+            ];
           };
         };
       };

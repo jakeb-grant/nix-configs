@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ pkgs, ... }:
 
 {
   # AMD GPU drivers
@@ -7,11 +7,11 @@
   # OpenGL/Vulkan support
   hardware.graphics = {
     enable = true;
-    enable32Bit = true;  # For 32-bit applications (games, Wine)
+    enable32Bit = true; # For 32-bit applications (games, Wine)
 
     extraPackages = with pkgs; [
-      amdvlk         # Vulkan driver
-      rocmPackages.clr.icd  # OpenCL
+      amdvlk # Vulkan driver
+      rocmPackages.clr.icd # OpenCL
     ];
 
     # For 32-bit applications

@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ pkgs, ... }:
 
 {
   # Bootloader
@@ -16,7 +16,7 @@
   # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
 
   # Timezone and locale
-  time.timeZone = "America/Denver";  # Change to your timezone
+  time.timeZone = "America/Denver"; # Change to your timezone
   i18n.defaultLocale = "en_US.UTF-8";
   i18n.extraLocaleSettings = {
     LC_ADDRESS = "en_US.UTF-8";
@@ -49,7 +49,7 @@
   ];
 
   # Additional programs
-  programs.nix-ld.enable = true;  # Enable dynamic library resolution for LSPs and other tools
+  programs.nix-ld.enable = true; # Enable dynamic library resolution for LSPs and other tools
   # programs.mtr.enable = true;  # Network diagnostic tool
   # programs.gnupg.agent = {
   #   enable = true;
@@ -57,7 +57,10 @@
   # };
 
   # Enable flakes
-  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  nix.settings.experimental-features = [
+    "nix-command"
+    "flakes"
+  ];
 
   # Allow unfree packages system-wide
   nixpkgs.config.allowUnfree = true;
@@ -71,8 +74,8 @@
   # networking.firewall.enable = false;  # Disable firewall entirely
 
   # Auto upgrade
-  system.autoUpgrade.enable = false;  # Set to true for automatic updates
+  system.autoUpgrade.enable = false; # Set to true for automatic updates
 
   # NixOS version
-  system.stateVersion = "25.05";  # Don't change this after initial install
+  system.stateVersion = "25.05"; # Don't change this after initial install
 }

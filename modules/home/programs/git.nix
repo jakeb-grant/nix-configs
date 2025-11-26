@@ -1,4 +1,4 @@
-{ config, pkgs, osConfig, lib, ... }:
+{ osConfig, ... }:
 
 let
   # Access main-user config from system configuration

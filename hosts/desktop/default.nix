@@ -1,4 +1,4 @@
-{ config, pkgs, lib, ... }:
+{ ... }:
 
 {
   imports = [
@@ -7,7 +7,7 @@
 
     # Shared system modules
     ../../modules/system/user.nix
-    ../../modules/system/user-preferences.nix  # New preferences module
+    ../../modules/system/user-preferences.nix # New preferences module
     ../../modules/system/core.nix
     ../../modules/system/desktop-environment.nix
 

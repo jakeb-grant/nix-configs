@@ -1,4 +1,9 @@
-{ config, pkgs, lib, osConfig, ... }:
+{
+  pkgs,
+  lib,
+  osConfig,
+  ...
+}:
 
 {
   # Common desktop application configurations
@@ -6,13 +11,19 @@
 
   # GUI applications (require desktop environment)
   home.packages = with pkgs; [
-    # Web browser
-    firefox
+    firefox # Web browser
+    nil # Nix language server for Zed to use
+    nixd # Nix language server for Zed to use
   ];
 
   programs.zed-editor = {
     enable = true;
-    extensions = [ "svelte" "nix" "nvim-nightfox" "material-icon-theme" ];
+    extensions = [
+      "svelte"
+      "nix"
+      "nvim-nightfox"
+      "material-icon-theme"
+    ];
     userSettings = {
       base_keymap = "VSCode";
       buffer_font_family = "JetBrainsMono Nerd Font";
@@ -49,11 +60,16 @@
   };
 
   # Firefox configuration
-  home.sessionVariables = lib.mkIf
-    (lib.elem (osConfig.desktop-environment.de or "none") ["plasma" "hyprland"]) {
-    # Enable Wayland for Firefox (only for Wayland-capable DEs)
-    MOZ_ENABLE_WAYLAND = "1";
-  };
+  home.sessionVariables =
+    lib.mkIf
+      (lib.elem (osConfig.desktop-environment.de or "none") [
+        "plasma"
+        "hyprland"
+      ])
+      {
+        # Enable Wayland for Firefox (only for Wayland-capable DEs)
+        MOZ_ENABLE_WAYLAND = "1";
+      };
 
   # Future: Add shared GUI application configs here
   # For example:

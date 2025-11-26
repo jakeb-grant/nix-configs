@@ -1,4 +1,4 @@
-{ lib, config, pkgs, ... }:
+{ lib, ... }:
 
 {
   # Desktop environment option module
@@ -8,7 +8,10 @@
     enable = lib.mkEnableOption "enable desktop environment module";
 
     de = lib.mkOption {
-      type = lib.types.enum [ "plasma" "hyprland" ];
+      type = lib.types.enum [
+        "plasma"
+        "hyprland"
+      ];
       default = "plasma";
       description = ''
         Desktop environment to use:

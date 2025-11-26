@@ -1,4 +1,4 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, ... }:
 
 {
   # Enable Intel and NVIDIA drivers
@@ -30,7 +30,7 @@
       # Use 'nvidia-offload <command>' to run apps on NVIDIA
       offload = {
         enable = true;
-        enableOffloadCmd = true;  # Provides 'nvidia-offload' command
+        enableOffloadCmd = true; # Provides 'nvidia-offload' command
       };
 
       # Alternative: Sync mode (always use NVIDIA, display through Intel)
@@ -41,8 +41,8 @@
       # Bus IDs - CRITICAL: These must match your hardware
       # Find yours with: lspci | grep -E "VGA|3D"
       # Convert format: "00:02.0" -> "PCI:0:2:0"
-      intelBusId = "PCI:0:2:0";    # Intel UHD Graphics 630
-      nvidiaBusId = "PCI:1:0:0";   # NVIDIA GTX 1050 Ti Mobile
+      intelBusId = "PCI:0:2:0"; # Intel UHD Graphics 630
+      nvidiaBusId = "PCI:1:0:0"; # NVIDIA GTX 1050 Ti Mobile
 
       # If you have issues, you may need to force Intel iGPU:
       # reverseSync.enable = true;
@@ -52,12 +52,12 @@
   # Hardware acceleration (OpenGL, Vulkan)
   hardware.graphics = {
     enable = true;
-    enable32Bit = true;  # For 32-bit applications (games, Wine, Steam)
+    enable32Bit = true; # For 32-bit applications (games, Wine, Steam)
 
     extraPackages = with pkgs; [
       # Intel drivers
-      intel-media-driver    # LIBVA_DRIVER_NAME=iHD
-      intel-vaapi-driver   # LIBVA_DRIVER_NAME=i965 (older, but more compatible)
+      intel-media-driver # LIBVA_DRIVER_NAME=iHD
+      intel-vaapi-driver # LIBVA_DRIVER_NAME=i965 (older, but more compatible)
       libva-vdpau-driver
       libvdpau-va-gl
 
