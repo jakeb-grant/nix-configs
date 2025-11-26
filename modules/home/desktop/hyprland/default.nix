@@ -7,8 +7,9 @@
   wayland.windowManager.hyprland = {
     enable = true;
 
-    # Enable systemd integration for better service management
-    systemd.enable = true;
+    # Disable systemd integration - conflicts with UWSM (as per Hyprland docs)
+    # UWSM is enabled in system config via programs.hyprland.withUWSM
+    systemd.enable = false;
 
     # Enable XWayland for X11 app compatibility
     xwayland.enable = true;
@@ -26,6 +27,8 @@
 
       # Auto-start applications
       exec-once = [
+        "hyprpaper" # Wallpaper daemon
+        "waybar" # Status bar (systemd integration incompatible with disabled Hyprland systemd)
         "nm-applet --indicator" # NetworkManager applet (WiFi secrets agent)
         "mako" # Notification daemon
         "${pkgs.polkit_gnome}/libexec/polkit-gnome-authentication-agent-1" # Polkit agent
@@ -33,7 +36,7 @@
 
       # Keybindings
       bind = [
-        "$mod, RETURN, exec, ghostty"
+        "$mod, RETURN, exec, ghostty +new-window"
         "$mod SHIFT, RETURN, exec, zeditor"
         "$mod, Q, killactive,"
         "$mod, M, exit,"
@@ -157,11 +160,9 @@
   programs.waybar = {
     enable = true;
 
-    # Enable systemd integration for auto-start
-    systemd = {
-      enable = true;
-      target = "hyprland-session.target";
-    };
+    # Disable systemd integration - hyprland-session.target doesn't exist
+    # when Hyprland's systemd integration is disabled for UWSM
+    systemd.enable = false;
 
     # Basic configuration - customize as needed
     settings = {
@@ -240,6 +241,23 @@
       }
     '';
   };
+
+  # Hyprpaper configuration (wallpaper daemon)
+  home.file.".config/hypr/hyprpaper.conf".text = ''
+    # Preload wallpaper from nix-configs repo
+    preload = ~/nix-configs/wallpapers/safe_landing_horizontal.jpg
+
+    # Set wallpaper for all monitors
+    # Format: wallpaper = monitor,path
+    # Empty monitor name = apply to all monitors
+    wallpaper = ,~/nix-configs/wallpapers/safe_landing_horizontal.jpg
+
+    # Disable splash text
+    splash = false
+
+    # Disable IPC (saves resources if you don't need to change wallpaper dynamically)
+    ipc = off
+  '';
 
   # Hyprland user packages
   home.packages = with pkgs; [

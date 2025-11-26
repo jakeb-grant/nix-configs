@@ -4,17 +4,16 @@
   config = lib.mkIf (config.desktop-environment.enable && config.desktop-environment.de == "hyprland") {
     # Hyprland Wayland Compositor
     programs.hyprland.enable = true;
+    programs.hyprland.withUWSM = true; # Enable UWSM for proper systemd integration
 
-    # Display manager options for Hyprland:
-    # Option 1: TTY login (lightweight, login then run 'Hyprland')
-    # Option 2: GDM (GNOME Display Manager)
-    # Option 3: SDDM (can work with Wayland session)
+    # Display manager: GDM (GNOME Display Manager - best Wayland support)
+    services.displayManager.gdm.enable = true;
+    services.displayManager.gdm.wayland = true;
 
-    # Using TTY login by default (most common for Hyprland)
-    # To use: login at TTY and run 'Hyprland'
-    # Uncomment one of the following if you prefer a display manager:
-    # services.xserver.displayManager.gdm.enable = true;
-    # services.displayManager.sddm.enable = true;
+    # GNOME Keyring for storing secrets (WiFi passwords, etc.)
+    # Required for NetworkManager to remember WiFi passwords
+    services.gnome.gnome-keyring.enable = true;
+    security.pam.services.gdm.enableGnomeKeyring = true;
 
     # Note: User packages (terminal, launcher, etc.) are managed via home-manager
     # See modules/home/desktop/hyprland/default.nix

@@ -4,6 +4,17 @@
   # Enable Intel and NVIDIA drivers
   services.xserver.videoDrivers = [ "nvidia" ];
 
+  # Early KMS: Load modules in initramfs for early display initialization
+  # IMPORTANT: i915 must load BEFORE nvidia modules on hybrid graphics
+  # This prevents compositor restart issues and app stalling
+  boot.initrd.kernelModules = [
+    "i915"              # Intel iGPU - LOAD FIRST
+    "nvidia"            # NVIDIA driver
+    "nvidia_modeset"    # NVIDIA modesetting
+    "nvidia_uvm"        # NVIDIA Unified Memory
+    "nvidia_drm"        # NVIDIA DRM (Direct Rendering Manager)
+  ];
+
   hardware.nvidia = {
     # Use the proprietary NVIDIA driver
     # Set to true for open-source kernel module (beta, for RTX 16xx and newer)
@@ -19,10 +30,13 @@
     modesetting.enable = true;
 
     # Power management (important for laptops)
-    powerManagement.enable = true;
+    # DISABLED: Adds NVreg_PreserveVideoMemoryAllocations which causes compositor restart issues
+    # Re-enable if you need suspend/resume to work and compositor restart works without it
+    powerManagement.enable = false;
     # Fine-grained power management (turns off NVIDIA GPU when not in use)
     # This saves battery but may cause issues with some applications
-    powerManagement.finegrained = true;
+    # DISABLED: Causes Hyprland to freeze on re-login after exit
+    powerManagement.finegrained = false;
 
     # NVIDIA Prime configuration for hybrid graphics
     prime = {
@@ -84,8 +98,10 @@
   boot.kernelParams = [
     # Enable DRM kernel mode setting for NVIDIA
     "nvidia-drm.modeset=1"
+    "nvidia-drm.fbdev=1"
     # Preserve video memory after suspend
-    "nvidia.NVreg_PreserveVideoMemoryAllocations=1"
+    # DISABLED: Can cause issues with compositor restarts (Hyprland exit/re-login)
+    # "nvidia.NVreg_PreserveVideoMemoryAllocations=1"
   ];
 
   # Optional: Create aliases for running apps on NVIDIA
