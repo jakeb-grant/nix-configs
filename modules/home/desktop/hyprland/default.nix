@@ -6,6 +6,13 @@
   # Hyprland configuration file
   wayland.windowManager.hyprland = {
     enable = true;
+
+    # Enable systemd integration for better service management
+    systemd.enable = true;
+
+    # Enable XWayland for X11 app compatibility
+    xwayland.enable = true;
+
     settings = {
       # Example basic configuration
       # Customize this based on your preferences
@@ -17,9 +24,17 @@
         ",preferred,auto,1" # Auto-detect and use preferred resolution
       ];
 
+      # Auto-start applications
+      exec-once = [
+        "nm-applet --indicator" # NetworkManager applet (WiFi secrets agent)
+        "mako" # Notification daemon
+        "${pkgs.polkit_gnome}/libexec/polkit-gnome-authentication-agent-1" # Polkit agent
+      ];
+
       # Keybindings
       bind = [
-        "$mod, RETURN, exec, kitty"
+        "$mod, RETURN, exec, ghostty"
+        "$mod SHIFT, RETURN, exec, zeditor"
         "$mod, Q, killactive,"
         "$mod, M, exit,"
         "$mod, E, exec, thunar"
@@ -27,6 +42,10 @@
         "$mod, D, exec, rofi -show drun"
         "$mod, P, pseudo,"
         "$mod, J, togglesplit,"
+
+        # Screenshots
+        ", Print, exec, grim ~/Pictures/screenshot-$(date +%Y%m%d-%H%M%S).png"
+        "SHIFT, Print, exec, grim -g \"$(slurp)\" ~/Pictures/screenshot-$(date +%Y%m%d-%H%M%S).png"
 
         # Move focus
         "$mod, left, movefocus, l"
@@ -83,10 +102,12 @@
           size = 3;
           passes = 1;
         };
-        drop_shadow = true;
-        shadow_range = 4;
-        shadow_render_power = 3;
-        "col.shadow" = "rgba(1a1a1aee)";
+        shadow = {
+          enabled = true;
+          range = 4;
+          render_power = 3;
+          color = "rgba(1a1a1aee)";
+        };
       };
 
       # Animations
@@ -113,10 +134,21 @@
         sensitivity = 0;
       };
 
+      # Cursor configuration
+      # NOTE: This is a universal Wayland setting, not GPU-specific
+      # Disables hardware cursor plane (uses software rendering instead)
+      # Necessary for many GPUs on Wayland, keeps config portable across hardware
+      cursor = {
+        no_hardware_cursors = true;
+        default_monitor = "";
+      };
+
       # Misc settings
       misc = {
         disable_hyprland_logo = true;
         disable_splash_rendering = true;
+        vfr = true; # Variable frame rate (saves power)
+        vrr = 0; # VRR off (0), on (1), or fullscreen only (2)
       };
     };
   };
@@ -124,6 +156,13 @@
   # Waybar configuration
   programs.waybar = {
     enable = true;
+
+    # Enable systemd integration for auto-start
+    systemd = {
+      enable = true;
+      target = "hyprland-session.target";
+    };
+
     # Basic configuration - customize as needed
     settings = {
       mainBar = {
@@ -178,7 +217,7 @@
     };
     style = ''
       * {
-        font-family: "JetBrains Mono", monospace;
+        font-family: "JetBrainsMono Nerd Font", monospace;
         font-size: 13px;
       }
 
@@ -204,12 +243,11 @@
 
   # Hyprland user packages
   home.packages = with pkgs; [
-    # Terminal emulator
-    kitty
-    # Alternatives: alacritty, foot
+    # Terminal emulator (ghostty configured in desktop/common)
+    # Alternatives: alacritty, foot, kitty
 
     # Application launcher
-    rofi-wayland
+    rofi
 
     # Status bar (configured above via programs.waybar)
     # waybar is enabled via programs.waybar, not home.packages
@@ -236,5 +274,8 @@
 
     # Network management applet
     networkmanagerapplet
+
+    # Polkit authentication agent (for password prompts)
+    polkit_gnome
   ];
 }

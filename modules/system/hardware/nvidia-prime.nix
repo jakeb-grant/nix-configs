@@ -68,12 +68,15 @@
 
   # Environment variables for NVIDIA hybrid graphics
   environment.sessionVariables = {
-    # NVIDIA-specific environment variables
-    LIBVA_DRIVER_NAME = "nvidia";
-    GBM_BACKEND = "nvidia-drm";
+    # Use Intel for VA-API by default (since we're in offload mode)
+    # NVIDIA will be used via nvidia-offload command when needed
+    LIBVA_DRIVER_NAME = "iHD"; # Intel iHD driver (newer)
+    # Fallback: "i965" for older Intel GPUs
+
+    # GLX vendor library for NVIDIA (doesn't interfere with Intel rendering)
     __GLX_VENDOR_LIBRARY_NAME = "nvidia";
 
-    # Wayland cursor fix for NVIDIA
+    # Wayland cursor fix - needed for both Intel and NVIDIA
     WLR_NO_HARDWARE_CURSORS = "1";
   };
 

@@ -28,6 +28,9 @@
   # Printing support
   services.printing.enable = true;
 
+  # Polkit for privilege escalation (required for NetworkManager, etc.)
+  security.polkit.enable = true;
+
   # Fonts
   fonts.packages = with pkgs; [
     noto-fonts

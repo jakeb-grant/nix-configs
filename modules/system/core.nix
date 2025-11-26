@@ -6,7 +6,11 @@
   boot.loader.efi.canTouchEfiVariables = true;
 
   # Networking
-  networking.networkmanager.enable = true;
+  networking.networkmanager = {
+    enable = true;
+    # Ensure WiFi is enabled
+    wifi.powersave = false; # Disable WiFi power saving (can cause disconnects)
+  };
 
   # Alternative: WiFi via wpa_supplicant (conflicts with NetworkManager)
   # networking.wireless.enable = true;

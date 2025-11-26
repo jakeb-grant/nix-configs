@@ -22,6 +22,7 @@
     # XDG portal for screen sharing, file picker, etc. (system-level requirement)
     xdg.portal = {
       enable = true;
+      wlr.enable = lib.mkForce false; # Hyprland has its own portal
       extraPortals = with pkgs; [
         xdg-desktop-portal-hyprland
         xdg-desktop-portal-gtk

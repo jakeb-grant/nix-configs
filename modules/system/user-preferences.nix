@@ -27,8 +27,11 @@ in
     };
 
     desktopEnvironment = lib.mkOption {
-      type = lib.types.enum [ "plasma" "hyprland" ];
-      default = "plasma";
+      type = lib.types.enum [
+        "plasma"
+        "hyprland"
+      ];
+      default = "hyprland";
       description = ''
         Desktop environment choice:
         - plasma: KDE Plasma 6 with SDDM
