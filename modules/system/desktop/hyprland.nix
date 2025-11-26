@@ -13,7 +13,11 @@
     # GNOME Keyring for storing secrets (WiFi passwords, etc.)
     # Required for NetworkManager to remember WiFi passwords
     services.gnome.gnome-keyring.enable = true;
+
+    # Enable auto-unlock of keyring on login
     security.pam.services.gdm.enableGnomeKeyring = true;
+    security.pam.services.login.enableGnomeKeyring = true;
+    security.pam.services.passwd.enableGnomeKeyring = true;
 
     # Note: User packages (terminal, launcher, etc.) are managed via home-manager
     # See modules/home/desktop/hyprland/default.nix

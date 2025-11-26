@@ -36,6 +36,12 @@
         dark = "Carbonfox - blurred";
         light = "Carbonfox - blurred";
       };
+      # Override background opacity to match Ghostty (0.95 = 0xF2 in hex)
+      theme_overrides = {
+        "Carbonfox - blurred" = {
+          background = "#161616F2";
+        };
+      };
       icon_theme = {
         mode = "system";
         light = "Material Icon Theme";
@@ -71,7 +77,7 @@
 
       # Theme
       theme = "Carbonfox";
-      background-opacity = 0.8;
+      background-opacity = 0.95; # 0.0 (transparent) to 1.0 (opaque)
       background-blur = true;
 
       # Window appearance
