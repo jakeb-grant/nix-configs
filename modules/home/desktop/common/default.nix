@@ -59,6 +59,30 @@
     };
   };
 
+  # Ghostty terminal emulator
+  programs.ghostty = {
+    enable = true;
+    enableBashIntegration = true;
+
+    settings = {
+      # Font configuration (matching your Zed setup)
+      font-family = "JetBrainsMono Nerd Font";
+      font-size = 12;
+
+      # Theme
+      theme = "Carbonfox";
+      background-opacity = 0.8;
+      background-blur = true;
+
+      # Window appearance
+      window-padding-x = 10;
+      window-padding-y = 10;
+
+      # Performance
+      shell-integration = "bash";
+    };
+  };
+
   # Firefox configuration
   home.sessionVariables =
     lib.mkIf
@@ -70,9 +94,4 @@
         # Enable Wayland for Firefox (only for Wayland-capable DEs)
         MOZ_ENABLE_WAYLAND = "1";
       };
-
-  # Future: Add shared GUI application configs here
-  # For example:
-  # programs.vscode = { ... };
-  # programs.firefox = { ... };
 }
