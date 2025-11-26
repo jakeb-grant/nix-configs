@@ -60,6 +60,11 @@
               "@sveltejs/mcp"
             ];
           };
+          nixos = {
+            type = "stdio";
+            command = "uvx";
+            args = [ "mcp-nixos" ];
+          };
         };
       };
 
