@@ -1,7 +1,173 @@
-{ config, pkgs, ... }:
+{ config, pkgs, osConfig, ... }:
 
+let
+  # Import theme colors from system config
+  theme = osConfig.theme.colors;
+in
 {
   # Hyprland home-manager configuration
+
+  # GTK configuration (for icon theme support in rofi)
+  # NOTE: On first-time setup with existing GTK configs, you may need to:
+  # 1. Back up existing files: mv ~/.config/gtk-{3,4}.0 ~/gtk-config-backup/
+  # 2. Or add force flags (uncomment below) to overwrite:
+  #    xdg.configFile."gtk-3.0/settings.ini".force = true;
+  #    xdg.configFile."gtk-4.0/settings.ini".force = true;
+  #    xdg.configFile."gtk-4.0/gtk.css".force = true;
+  #    home.file.".gtkrc-2.0".force = true;
+  gtk = {
+    enable = true;
+    theme = {
+      name = "Adwaita-dark";
+      package = pkgs.gnome-themes-extra;
+    };
+    iconTheme = {
+      name = "Papirus-Dark";
+      package = pkgs.papirus-icon-theme;
+    };
+    gtk2.configLocation = "${config.xdg.configHome}/gtk-2.0/gtkrc";
+    gtk3.extraConfig = {
+      gtk-application-prefer-dark-theme = true;
+    };
+    gtk4.extraConfig = {
+      gtk-application-prefer-dark-theme = true;
+    };
+  };
+
+  # Hide rofi-theme-selector from app launcher
+  xdg.dataFile."applications/rofi-theme-selector.desktop".text = ''
+    [Desktop Entry]
+    Type=Application
+    Name=Rofi Theme Selector
+    NoDisplay=true
+  '';
+
+  # Rofi configuration
+  programs.rofi = {
+    enable = true;
+    package = pkgs.rofi;
+    font = "JetBrainsMono Nerd Font 12";
+    terminal = "${pkgs.ghostty}/bin/ghostty";
+  };
+
+  # Rofi custom theme (uses theme system)
+  home.file.".config/rofi/carbonfox.rasi".text = ''
+    * {
+      bg: ${theme.bgWithOpacity};
+      bg-alt: ${theme.bgAlt};
+      fg: ${theme.fg};
+      fg-alt: ${theme.fgAlt};
+
+      background-color: transparent;
+      text-color: @fg;
+
+      accent: ${theme.accent};
+      urgent: ${theme.error};
+      active: ${theme.success};
+    }
+
+    window {
+      transparency: "real";
+      background-color: @bg;
+      border: 2px;
+      border-color: @bg-alt;
+      border-radius: 8px;
+      width: 600px;
+      location: center;
+      anchor: center;
+    }
+
+    mainbox {
+      spacing: 10px;
+      padding: 20px;
+      background-color: transparent;
+    }
+
+    inputbar {
+      spacing: 10px;
+      padding: 10px;
+      border-radius: 4px;
+      background-color: @bg-alt;
+      children: [ prompt, entry ];
+    }
+
+    prompt {
+      text-color: @accent;
+      background-color: transparent;
+    }
+
+    entry {
+      placeholder: "Search...";
+      placeholder-color: @fg-alt;
+      background-color: transparent;
+    }
+
+    listview {
+      columns: 1;
+      lines: 8;
+      cycle: true;
+      scrollbar: false;
+      spacing: 5px;
+      background-color: transparent;
+    }
+
+    element {
+      padding: 10px;
+      border-radius: 4px;
+      background-color: transparent;
+    }
+
+    element selected.normal {
+      background-color: @accent;
+      text-color: @bg;
+    }
+
+    element selected.urgent {
+      background-color: @urgent;
+      text-color: @bg;
+    }
+
+    element selected.active {
+      background-color: @active;
+      text-color: @bg;
+    }
+
+    element-text {
+      background-color: transparent;
+      text-color: inherit;
+    }
+
+    element-icon {
+      background-color: transparent;
+      size: 24px;
+    }
+
+    message {
+      padding: 10px;
+      border-radius: 4px;
+      background-color: @bg-alt;
+    }
+
+    textbox {
+      background-color: transparent;
+    }
+  '';
+
+  # Set rofi theme
+  xdg.configFile."rofi/config.rasi".text = ''
+    configuration {
+      modi: "drun,run,window";
+      font: "JetBrainsMono Nerd Font 12";
+      terminal: "${pkgs.ghostty}/bin/ghostty";
+      show-icons: true;
+      display-drun: "";
+      display-run: "";
+      display-window: "";
+      drun-display-format: "{name}";
+      icon-theme: "Papirus-Dark";
+    }
+    @theme "carbonfox"
+  '';
 
   # Hyprland configuration file
   wayland.windowManager.hyprland = {
@@ -38,7 +204,7 @@
       exec-once = [
         "hyprpaper" # Wallpaper daemon
         "waybar" # Status bar (systemd integration incompatible with disabled Hyprland systemd)
-        "nm-applet --indicator" # NetworkManager applet (WiFi secrets agent)
+        "nm-applet --indicator" # NetworkManager applet (WiFi secrets agent - runs in background)
         "mako" # Notification daemon
         "${pkgs.polkit_gnome}/libexec/polkit-gnome-authentication-agent-1" # Polkit agent
       ];
@@ -66,7 +232,7 @@
         # These keysyms only exist on laptops, harmless on desktops
         ", XF86MonBrightnessUp, exec, brightnessctl set +5%"
         ", XF86MonBrightnessDown, exec, brightnessctl set 5%-"
-        ", XF86AudioRaiseVolume, exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+"
+        ", XF86AudioRaiseVolume, exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+ -l 1.0"
         ", XF86AudioLowerVolume, exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"
         ", XF86AudioMute, exec, wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"
 
@@ -112,8 +278,8 @@
         gaps_in = 5;
         gaps_out = 10;
         border_size = 2;
-        "col.active_border" = "rgba(33ccffee) rgba(00ff99ee) 45deg";
-        "col.inactive_border" = "rgba(595959aa)";
+        "col.active_border" = "${theme.accentBorder}";
+        "col.inactive_border" = "${theme.borderInactive}";
         layout = "dwindle";
       };
 
@@ -129,7 +295,7 @@
           enabled = true;
           range = 4;
           render_power = 3;
-          color = "rgba(1a1a1aee)";
+          color = "${theme.shadowColor}";
         };
       };
 
@@ -196,7 +362,6 @@
           "network"
           "pulseaudio"
           "battery"
-          "tray"
         ];
 
         "hyprland/workspaces" = {
@@ -204,7 +369,19 @@
         };
 
         clock = {
-          format = "{:%Y-%m-%d %H:%M}";
+          format = "{:%A, %b %d %I:%M %p}";
+          tooltip-format = "<tt><small>{calendar}</small></tt>";
+          calendar = {
+            mode = "month";
+            weeks-pos = "left";
+            format = {
+              months = "<span color='${theme.accent}'><b>{}</b></span>";
+              days = "<span color='${theme.fg}'><b>{}</b></span>";
+              weeks = "<span color='${theme.info}'><b>W{}</b></span>";
+              weekdays = "<span color='${theme.warning}'><b>{}</b></span>";
+              today = "<span color='${theme.error}'><b><u>{}</u></b></span>";
+            };
+          };
         };
 
         battery = {
@@ -219,20 +396,34 @@
         };
 
         network = {
-          format-wifi = "{essid} ";
-          format-disconnected = "Disconnected ";
+          format-wifi = "{icon} {essid}";
+          format-ethernet = "󰈀 {ifname}";
+          format-disconnected = "󰖪 Disconnected";
+          format-icons = [
+            "󰤯" # Weak signal
+            "󰤟" # Fair signal
+            "󰤢" # Good signal
+            "󰤥" # Excellent signal
+            "󰤨" # Full signal
+          ];
+          tooltip-format-wifi = "{essid} ({signalStrength}%)";
+          tooltip-format-ethernet = "{ifname}: {ipaddr}";
+          on-click = "rofi-network-manager";
         };
 
         pulseaudio = {
-          format = "{volume}% {icon}";
-          format-muted = "";
+          format = "{icon} {volume}%";
+          format-muted = "󰖁 {volume}%";
           format-icons = {
             default = [
-              ""
-              ""
-              ""
+              "󰕿" # Low volume (0-33%)
+              "󰖀" # Medium volume (34-66%)
+              "󰕾" # High volume (67-100%)
             ];
           };
+          max-volume = 100;
+          scroll-step = 1;
+          on-click = "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle";
         };
       };
     };
@@ -240,24 +431,82 @@
       * {
         font-family: "JetBrainsMono Nerd Font", monospace;
         font-size: 13px;
+        border: none;
+        border-radius: 0;
       }
 
       window#waybar {
-        background-color: rgba(26, 27, 38, 0.9);
-        color: #ffffff;
+        background-color: ${theme.bgRgba};
+        color: ${theme.fg};
       }
 
       #workspaces button {
-        padding: 0 5px;
-        color: #ffffff;
+        padding: 0 8px;
+        margin: 0 2px;
+        color: ${theme.fgAlt};
+        background-color: transparent;
+        transition: all 0.3s ease;
       }
 
       #workspaces button.active {
-        background-color: rgba(255, 255, 255, 0.2);
+        color: ${theme.accent};
+        background-color: ${theme.accentRgba};
+        border-bottom: 2px solid ${theme.accent};
       }
 
-      #clock, #battery, #network, #pulseaudio, #tray {
-        padding: 0 10px;
+      #workspaces button:hover {
+        background-color: ${theme.hover};
+        color: ${theme.fg};
+      }
+
+      #clock, #battery, #network, #pulseaudio {
+        padding: 0 12px;
+        margin: 0 2px;
+        color: ${theme.fg};
+      }
+
+      #clock {
+        color: ${theme.accent};
+        font-weight: bold;
+      }
+
+      #battery {
+        color: ${theme.success};
+      }
+
+      #battery.charging {
+        color: ${theme.accent};
+      }
+
+      #battery.warning:not(.charging) {
+        color: ${theme.warning};
+      }
+
+      #battery.critical:not(.charging) {
+        color: ${theme.error};
+        animation: blink 1s linear infinite;
+      }
+
+      @keyframes blink {
+        50% {
+          opacity: 0.5;
+        }
+      }
+
+      #network {
+        color: ${theme.info};
+      }
+
+      #network.disconnected {
+        color: ${theme.error};
+      }
+
+      #pulseaudio {
+        color: ${theme.warning};
+      }
+
+      #pulseaudio.muted {
+        color: ${theme.fgAlt};
       }
     '';
   };
@@ -284,8 +533,9 @@
     # Terminal emulator (ghostty configured in desktop/common)
     # Alternatives: alacritty, foot, kitty
 
-    # Application launcher
-    rofi
+    # Application launcher (rofi configured via programs.rofi above)
+    rofi-network-manager # Rofi-based WiFi/network manager
+    papirus-icon-theme # Icon theme for rofi
 
     # Status bar (configured above via programs.waybar)
     # waybar is enabled via programs.waybar, not home.packages

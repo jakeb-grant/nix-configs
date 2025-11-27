@@ -10,6 +10,7 @@
     ../../modules/system/user-preferences.nix # New preferences module
     ../../modules/system/core.nix
     ../../modules/system/desktop-environment.nix
+    ../../modules/themes # Theme system
 
     # Desktop environment modules (always imported)
     ../../modules/system/desktop/base.nix

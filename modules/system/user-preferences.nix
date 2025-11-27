@@ -50,6 +50,15 @@ in
       default = "jacob";
       description = "Name to use for git commits";
     };
+
+    theme = lib.mkOption {
+      type = lib.types.enum [ "carbonfox" ];
+      default = "carbonfox";
+      description = ''
+        Color theme for desktop environment and applications:
+        - carbonfox: Dark theme with carbon black background and cyan accents
+      '';
+    };
   };
 
   config = lib.mkIf cfg.enable {
@@ -69,6 +78,12 @@ in
     desktop-environment = {
       enable = true;
       de = cfg.desktopEnvironment;
+    };
+
+    # Enable and configure theme system
+    theme = {
+      enable = true;
+      selected = cfg.theme;
     };
   };
 }

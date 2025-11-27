@@ -5,6 +5,11 @@
   ...
 }:
 
+let
+  # Import theme from system config
+  theme = osConfig.theme.colors;
+  themeOpacity = osConfig.theme.opacity;
+in
 {
   # Common desktop application configurations
   # Shared across all desktop environments
@@ -33,14 +38,12 @@
       };
       theme = {
         mode = "system";
-        dark = "Carbonfox - blurred";
-        light = "Carbonfox - blurred";
+        dark = osConfig.theme.zed.theme;
+        light = osConfig.theme.zed.theme;
       };
-      # Override background opacity to match Ghostty (0.95 = 0xF2 in hex)
+      # Theme overrides from centralized theme system
       theme_overrides = {
-        "Carbonfox - blurred" = {
-          background = "#161616F2";
-        };
+        "${osConfig.theme.zed.theme}" = osConfig.theme.zed.overrides;
       };
       icon_theme = {
         mode = "system";
@@ -75,9 +78,10 @@
       font-family = "JetBrainsMono Nerd Font";
       font-size = 12;
 
-      # Theme
-      theme = "Carbonfox";
-      background-opacity = 0.95; # 0.0 (transparent) to 1.0 (opaque)
+      # Theme colors (using theme system instead of built-in theme)
+      background = "${theme.bg}";
+      foreground = "${theme.fg}";
+      background-opacity = themeOpacity; # Uses theme system opacity value
       background-blur = true;
 
       # Window appearance
