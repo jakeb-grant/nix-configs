@@ -4,17 +4,6 @@
   # Enable Intel and NVIDIA drivers
   services.xserver.videoDrivers = [ "nvidia" ];
 
-  # Early KMS: Load modules in initramfs for early display initialization
-  # IMPORTANT: i915 must load BEFORE nvidia modules on hybrid graphics
-  # This prevents compositor restart issues and app stalling
-  boot.initrd.kernelModules = [
-    "i915"              # Intel iGPU - LOAD FIRST
-    "nvidia"            # NVIDIA driver
-    "nvidia_modeset"    # NVIDIA modesetting
-    "nvidia_uvm"        # NVIDIA Unified Memory
-    "nvidia_drm"        # NVIDIA DRM (Direct Rendering Manager)
-  ];
-
   hardware.nvidia = {
     # Use the proprietary NVIDIA driver
     # Set to true for open-source kernel module (beta, for RTX 16xx and newer)
@@ -90,18 +79,14 @@
     # GLX vendor library for NVIDIA (doesn't interfere with Intel rendering)
     __GLX_VENDOR_LIBRARY_NAME = "nvidia";
 
-    # Wayland cursor fix - needed for both Intel and NVIDIA
-    WLR_NO_HARDWARE_CURSORS = "1";
+    # Note: WLR_NO_HARDWARE_CURSORS is set in Hyprland config
+    # (cursor.no_hardware_cursors = true) - no need to duplicate here
   };
 
   # Kernel parameters
   boot.kernelParams = [
-    # Enable DRM kernel mode setting for NVIDIA
+    # Enable DRM kernel mode setting for NVIDIA (required for Wayland)
     "nvidia-drm.modeset=1"
-    "nvidia-drm.fbdev=1"
-    # Preserve video memory after suspend
-    # DISABLED: Can cause issues with compositor restarts (Hyprland exit/re-login)
-    # "nvidia.NVreg_PreserveVideoMemoryAllocations=1"
   ];
 
   # Optional: Create aliases for running apps on NVIDIA

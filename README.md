@@ -25,6 +25,9 @@ nix-configs/
 │   ├── secrets.nix              # Public keys and secret definitions
 │   └── *.age                    # Encrypted secret files (safe to commit)
 │
+├── wallpapers/                  # Wallpaper images for desktop environments
+│   └── *.jpg                    # Used by Hyprpaper and other wallpaper managers
+│
 └── modules/
     ├── system/
     │   ├── user.nix             # Main user module
@@ -43,9 +46,12 @@ nix-configs/
     └── home/
         ├── default.nix          # Home-manager entry point
         ├── desktop/             # Desktop environment configs
-        │   ├── common/          # Shared across all DEs
-        │   ├── plasma/          # Plasma-specific
-        │   └── hyprland/        # Hyprland-specific
+        │   ├── common/
+        │   │   └── default.nix  # Shared across all DEs (Zed, Ghostty, Firefox)
+        │   ├── plasma/
+        │   │   └── default.nix  # Plasma-specific packages
+        │   └── hyprland/
+        │       └── default.nix  # Hyprland config (Waybar, Rofi, etc.)
         └── programs/
             ├── shell.nix        # Bash configuration
             └── git.nix          # Git configuration
@@ -78,6 +84,8 @@ sudo nixos-rebuild switch
 sudo reboot
 ```
 
+**Note on stateVersion:** This configuration uses NixOS 25.05. Both `system.stateVersion` (in `modules/system/core.nix`) and `home.stateVersion` (in `modules/home/default.nix`) are set to `"25.05"`. These should remain in sync. The init.sh script will automatically detect and update both if needed.
+
 #### Step 2: Clone This Repository
 
 After reboot, clone your configuration:
@@ -101,18 +109,20 @@ cd nix-configs
 The script will:
 - Detect your system's stateVersion automatically
 - Copy/generate hardware-configuration.nix to the correct host directory
-- Optionally configure user preferences (or use defaults)
+- Optionally update the default values in user-preferences.nix
 - Set up git visibility for flake-required files
 
 **What the script asks for:**
 - Which host to configure (desktop or laptop)
-- Whether to update user preferences (optional):
+- Whether to update the default values in user-preferences.nix:
   - Username (defaults to current user)
   - Full name
   - Timezone
   - Desktop environment (Plasma or Hyprland)
   - Git email
   - Git name
+
+**Note:** The script modifies the defaults directly in `modules/system/user-preferences.nix`, not per-host configuration files.
 
 **Alternative: Manual Configuration**
 
@@ -163,16 +173,21 @@ timezone = lib.mkOption {
 
 desktopEnvironment = lib.mkOption {
   type = lib.types.enum [ "plasma" "hyprland" ];
-  default = "plasma";          # Or "hyprland"
+  default = "hyprland";        # Set your preference: "plasma" or "hyprland"
   description = "Desktop environment choice";
 };
 ```
 
 3. **Make hardware-configuration.nix visible to flakes:**
 ```bash
+# Add as "intent-to-add" - makes file visible to Nix flakes without committing it
 git add -f -N hosts/*/hardware-configuration.nix
+
+# Add to git's local exclude list - prevents accidental commits
 echo "hosts/*/hardware-configuration.nix" >> .git/info/exclude
 ```
+
+**What is "intent-to-add"?** The `-N` flag (`--intent-to-add`) tells git about the file without staging its contents. This makes the file visible to Nix flakes (which need to see all referenced files) while keeping it uncommitted. Hardware configs are machine-specific and shouldn't be in version control.
 
 That's it! All user settings are centralized in `user-preferences.nix` and automatically applied to all hosts.
 
@@ -267,13 +282,12 @@ Does root or the system need this package?
 
 #### Examples
 
-**Adding Discord:**
+**Adding Discord (example - not currently installed):**
 ```nix
 # modules/home/desktop/common/default.nix
 home.packages = with pkgs; [
   firefox
-  vscode
-  discord  # Add here
+  discord  # Add Discord here
 ];
 ```
 
@@ -342,6 +356,31 @@ home.sessionVariables = {
 - **System variables** → Hardware drivers, system infrastructure, affects all users
 - **Home variables** → Application configs, user preferences, per-user settings
 
+### Configured Applications
+
+This configuration includes the following pre-configured applications:
+
+**Development Tools:**
+- **Zed Editor** - Fast, collaborative code editor with Nix LSP support
+  - VSCode keybindings
+  - Configured with Svelte and Nix extensions
+  - JetBrainsMono Nerd Font integration
+  - Location: `modules/home/desktop/common/default.nix`
+
+- **Claude Code** - AI-powered coding assistant via CLI
+  - MCP servers configured: Svelte, NixOS
+  - Location: `modules/home/default.nix`
+
+**Terminal:**
+- **Ghostty** - GPU-accelerated terminal emulator
+  - Carbonfox theme with 95% opacity and blur
+  - JetBrainsMono Nerd Font
+  - Location: `modules/home/desktop/common/default.nix`
+
+**Desktop Environment Specific:**
+- **Hyprland**: Waybar, Rofi, Hyprpaper, Mako, Swaylock, Brightnessctl
+- **Plasma**: KDE Plasma 6 native applications
+
 ### Useful Aliases (after first rebuild)
 
 - `rebuild-desktop` - Rebuild desktop configuration
@@ -359,7 +398,7 @@ user-preferences = {
   userName = "jacob";                                      # System username
   fullName = "jacob";                                      # Full name for user account
   timezone = "America/Denver";                             # System timezone
-  desktopEnvironment = "plasma";                           # "plasma" or "hyprland"
+  desktopEnvironment = "hyprland";                         # Set to "plasma" or "hyprland"
   gitEmail = "86214494+jakeb-grant@users.noreply.github.com";  # Git commit email
   gitName = "jacob";                                       # Git commit name
 };
@@ -480,7 +519,7 @@ sudo nixos-rebuild switch --flake .#desktop
 
 ### Using Secrets in Configuration
 
-Secrets are declared in `modules/system/agenix-secrets.nix`:
+Secrets are declared in `modules/system/agenix-secrets.nix`. Here's an example (this configuration currently has no secrets defined):
 
 ```nix
 age.secrets.github-token = {
@@ -491,7 +530,9 @@ age.secrets.github-token = {
 };
 ```
 
-Access in your configuration:
+**Note:** The above is an example. To add actual secrets, use `./secrets.sh` and then declare them in `modules/system/agenix-secrets.nix`.
+
+Access secrets in your configuration:
 ```nix
 # Secret file path
 config.age.secrets.github-token.path  # → /run/agenix/github-token
@@ -550,7 +591,7 @@ Edit `modules/system/user-preferences.nix`:
 ```nix
 desktopEnvironment = lib.mkOption {
   type = lib.types.enum [ "plasma" "hyprland" ];
-  default = "plasma";  # Change to "hyprland"
+  default = "hyprland";  # Set to your preferred desktop environment
   description = "Desktop environment choice";
 };
 ```
@@ -572,7 +613,7 @@ sudo nixos-rebuild switch --flake .#laptop
 ```
 
 **Available Options:**
-- `"plasma"` - KDE Plasma 6 with SDDM (default)
+- `"plasma"` - KDE Plasma 6 with SDDM
 - `"hyprland"` - Hyprland Wayland compositor
 
 **What Changes Automatically:**
@@ -637,8 +678,9 @@ Run `nix flake check` to validate your configuration.
 - Check `nvidia-smi` to see if NVIDIA is active
 
 **Wayland/Hyprland cursor issues:**
-- Environment variable `WLR_NO_HARDWARE_CURSORS=1` is already set
-- If issues persist, try `WLR_RENDERER=vulkan`
+- Hardware cursors are disabled in Hyprland config via `cursor.no_hardware_cursors = true` (in `modules/home/desktop/hyprland/default.nix`)
+- This is configured natively in Hyprland, not as an environment variable
+- If issues persist, try adding `WLR_RENDERER=vulkan` as an environment variable
 
 **Poor battery life (laptop):**
 - Ensure `powerManagement.finegrained = true` in nvidia-prime.nix

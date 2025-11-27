@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ config, pkgs, ... }:
 
 {
   # Hyprland home-manager configuration
@@ -9,6 +9,15 @@
 
     # Disable systemd integration - conflicts with UWSM (as per Hyprland docs)
     # UWSM is enabled in system config via programs.hyprland.withUWSM
+    #
+    # DESIGN CHOICE: This is disabled universally (even on non-NVIDIA hardware)
+    # to keep configuration consistent across different hardware profiles.
+    # UWSM works fine on all hardware, and this avoids conditional logic.
+    #
+    # CONSEQUENCE: When systemd integration is disabled:
+    # 1. Apps must be added to the exec-once block below (not systemd services)
+    # 2. Programs with systemd options (like waybar) must have systemd.enable = false
+    # 3. Apps won't auto-restart if they crash (must manually relaunch or restart Hyprland)
     systemd.enable = false;
 
     # Enable XWayland for X11 app compatibility
@@ -46,9 +55,20 @@
         "$mod, P, pseudo,"
         "$mod, J, togglesplit,"
 
+        # Screen lock
+        "$mod, L, exec, swaylock"
+
         # Screenshots
         ", Print, exec, grim ~/Pictures/screenshot-$(date +%Y%m%d-%H%M%S).png"
         "SHIFT, Print, exec, grim -g \"$(slurp)\" ~/Pictures/screenshot-$(date +%Y%m%d-%H%M%S).png"
+
+        # Laptop function keys (brightness & volume)
+        # These keysyms only exist on laptops, harmless on desktops
+        ", XF86MonBrightnessUp, exec, brightnessctl set +5%"
+        ", XF86MonBrightnessDown, exec, brightnessctl set 5%-"
+        ", XF86AudioRaiseVolume, exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+"
+        ", XF86AudioLowerVolume, exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"
+        ", XF86AudioMute, exec, wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"
 
         # Move focus
         "$mod, left, movefocus, l"
@@ -245,12 +265,12 @@
   # Hyprpaper configuration (wallpaper daemon)
   home.file.".config/hypr/hyprpaper.conf".text = ''
     # Preload wallpaper from nix-configs repo
-    preload = ~/nix-configs/wallpapers/safe_landing_horizontal.jpg
+    preload = ${config.home.homeDirectory}/nix-configs/wallpapers/safe_landing_horizontal.jpg
 
     # Set wallpaper for all monitors
     # Format: wallpaper = monitor,path
     # Empty monitor name = apply to all monitors
-    wallpaper = ,~/nix-configs/wallpapers/safe_landing_horizontal.jpg
+    wallpaper = ,${config.home.homeDirectory}/nix-configs/wallpapers/safe_landing_horizontal.jpg
 
     # Disable splash text
     splash = false
@@ -286,6 +306,9 @@
 
     # Screen locker
     swaylock
+
+    # Brightness control (laptop function keys)
+    brightnessctl
 
     # File manager
     xfce.thunar

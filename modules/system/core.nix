@@ -19,8 +19,8 @@
   # networking.proxy.default = "http://user:password@proxy:port/";
   # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
 
-  # Timezone and locale
-  time.timeZone = "America/Denver"; # Change to your timezone
+  # Timezone is configured via user-preferences.nix
+  # Locale settings
   i18n.defaultLocale = "en_US.UTF-8";
   i18n.extraLocaleSettings = {
     LC_ADDRESS = "en_US.UTF-8";

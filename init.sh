@@ -87,20 +87,14 @@ if [ -n "$STATE_VERSION" ]; then
     echo ""
     echo -e "${YELLOW}Updating stateVersion to $STATE_VERSION...${NC}"
 
-    # Backup and update system stateVersion
+    # Update system stateVersion
     if [ -f "modules/system/core.nix" ]; then
-        if [ ! -f "modules/system/core.nix.backup" ]; then
-            cp "modules/system/core.nix" "modules/system/core.nix.backup"
-        fi
         sed -i "s|system.stateVersion = \".*\";|system.stateVersion = \"$STATE_VERSION\";|" "modules/system/core.nix"
         echo -e "${GREEN}✓ Updated system.stateVersion in modules/system/core.nix${NC}"
     fi
 
-    # Backup and update home-manager stateVersion
+    # Update home-manager stateVersion
     if [ -f "modules/home/default.nix" ]; then
-        if [ ! -f "modules/home/default.nix.backup" ]; then
-            cp "modules/home/default.nix" "modules/home/default.nix.backup"
-        fi
         sed -i "s|home.stateVersion = \".*\";|home.stateVersion = \"$STATE_VERSION\";|" "modules/home/default.nix"
         echo -e "${GREEN}✓ Updated home.stateVersion in modules/home/default.nix${NC}"
     fi
@@ -184,10 +178,6 @@ if [ "$update_prefs" = "y" ] || [ "$update_prefs" = "Y" ]; then
     # Update user-preferences.nix
     echo ""
     echo -e "${YELLOW}Updating modules/system/user-preferences.nix...${NC}"
-
-    if [ ! -f "modules/system/user-preferences.nix.backup" ]; then
-        cp "modules/system/user-preferences.nix" "modules/system/user-preferences.nix.backup"
-    fi
 
     # Use current values for replacement to handle any existing defaults
     sed -i "/userName = lib.mkOption/,/};/{s|default = \"$CURRENT_USERNAME\";|default = \"$USERNAME\";|}" modules/system/user-preferences.nix
