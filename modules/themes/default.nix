@@ -39,6 +39,36 @@
         readOnly = true;
       };
     };
+
+    gtk = {
+      gtk3Css = lib.mkOption {
+        type = lib.types.str;
+        description = "GTK3 CSS theme overrides";
+        readOnly = true;
+      };
+
+      gtk4Css = lib.mkOption {
+        type = lib.types.str;
+        description = "GTK4 CSS theme overrides";
+        readOnly = true;
+      };
+    };
+
+    waybar = {
+      css = lib.mkOption {
+        type = lib.types.str;
+        description = "Waybar CSS styling";
+        readOnly = true;
+      };
+    };
+
+    rofi = {
+      rasi = lib.mkOption {
+        type = lib.types.str;
+        description = "Rofi theme configuration (RASI format)";
+        readOnly = true;
+      };
+    };
   };
 
   config = lib.mkIf config.theme.enable {

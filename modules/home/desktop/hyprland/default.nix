@@ -1,4 +1,9 @@
-{ config, pkgs, osConfig, ... }:
+{
+  config,
+  pkgs,
+  osConfig,
+  ...
+}:
 
 let
   # Import theme colors from system config
@@ -17,20 +22,18 @@ in
   #    home.file.".gtkrc-2.0".force = true;
   gtk = {
     enable = true;
-    theme = {
-      name = "Adwaita-dark";
-      package = pkgs.gnome-themes-extra;
-    };
     iconTheme = {
       name = "Papirus-Dark";
       package = pkgs.papirus-icon-theme;
     };
     gtk2.configLocation = "${config.xdg.configHome}/gtk-2.0/gtkrc";
+    gtk3.extraCss = osConfig.theme.gtk.gtk3Css;
     gtk3.extraConfig = {
-      gtk-application-prefer-dark-theme = true;
+      enable-inspector-keybinding = true;
     };
+    gtk4.extraCss = osConfig.theme.gtk.gtk4Css;
     gtk4.extraConfig = {
-      gtk-application-prefer-dark-theme = true;
+      enable-inspector-keybinding = true;
     };
   };
 
@@ -51,107 +54,8 @@ in
   };
 
   # Rofi custom theme (uses theme system)
-  home.file.".config/rofi/carbonfox.rasi".text = ''
-    * {
-      bg: ${theme.bgWithOpacity};
-      bg-alt: ${theme.bgAlt};
-      fg: ${theme.fg};
-      fg-alt: ${theme.fgAlt};
-
-      background-color: transparent;
-      text-color: @fg;
-
-      accent: ${theme.accent};
-      urgent: ${theme.error};
-      active: ${theme.success};
-    }
-
-    window {
-      transparency: "real";
-      background-color: @bg;
-      border: 2px;
-      border-color: @bg-alt;
-      border-radius: 8px;
-      width: 600px;
-      location: center;
-      anchor: center;
-    }
-
-    mainbox {
-      spacing: 10px;
-      padding: 20px;
-      background-color: transparent;
-    }
-
-    inputbar {
-      spacing: 10px;
-      padding: 10px;
-      border-radius: 4px;
-      background-color: @bg-alt;
-      children: [ prompt, entry ];
-    }
-
-    prompt {
-      text-color: @accent;
-      background-color: transparent;
-    }
-
-    entry {
-      placeholder: "Search...";
-      placeholder-color: @fg-alt;
-      background-color: transparent;
-    }
-
-    listview {
-      columns: 1;
-      lines: 8;
-      cycle: true;
-      scrollbar: false;
-      spacing: 5px;
-      background-color: transparent;
-    }
-
-    element {
-      padding: 10px;
-      border-radius: 4px;
-      background-color: transparent;
-    }
-
-    element selected.normal {
-      background-color: @accent;
-      text-color: @bg;
-    }
-
-    element selected.urgent {
-      background-color: @urgent;
-      text-color: @bg;
-    }
-
-    element selected.active {
-      background-color: @active;
-      text-color: @bg;
-    }
-
-    element-text {
-      background-color: transparent;
-      text-color: inherit;
-    }
-
-    element-icon {
-      background-color: transparent;
-      size: 24px;
-    }
-
-    message {
-      padding: 10px;
-      border-radius: 4px;
-      background-color: @bg-alt;
-    }
-
-    textbox {
-      background-color: transparent;
-    }
-  '';
+  # Rofi theme from centralized theme system
+  home.file.".config/rofi/carbonfox.rasi".text = osConfig.theme.rofi.rasi;
 
   # Set rofi theme
   xdg.configFile."rofi/config.rasi".text = ''
@@ -227,6 +131,9 @@ in
         # Screenshots
         ", Print, exec, grim ~/Pictures/screenshot-$(date +%Y%m%d-%H%M%S).png"
         "SHIFT, Print, exec, grim -g \"$(slurp)\" ~/Pictures/screenshot-$(date +%Y%m%d-%H%M%S).png"
+
+        # Color picker (hyprpicker copies hex to clipboard)
+        "$mod SHIFT, C, exec, hyprpicker -a"
 
         # Laptop function keys (brightness & volume)
         # These keysyms only exist on laptops, harmless on desktops
@@ -427,88 +334,8 @@ in
         };
       };
     };
-    style = ''
-      * {
-        font-family: "JetBrainsMono Nerd Font", monospace;
-        font-size: 13px;
-        border: none;
-        border-radius: 0;
-      }
-
-      window#waybar {
-        background-color: ${theme.bgRgba};
-        color: ${theme.fg};
-      }
-
-      #workspaces button {
-        padding: 0 8px;
-        margin: 0 2px;
-        color: ${theme.fgAlt};
-        background-color: transparent;
-        transition: all 0.3s ease;
-      }
-
-      #workspaces button.active {
-        color: ${theme.accent};
-        background-color: ${theme.accentRgba};
-        border-bottom: 2px solid ${theme.accent};
-      }
-
-      #workspaces button:hover {
-        background-color: ${theme.hover};
-        color: ${theme.fg};
-      }
-
-      #clock, #battery, #network, #pulseaudio {
-        padding: 0 12px;
-        margin: 0 2px;
-        color: ${theme.fg};
-      }
-
-      #clock {
-        color: ${theme.accent};
-        font-weight: bold;
-      }
-
-      #battery {
-        color: ${theme.success};
-      }
-
-      #battery.charging {
-        color: ${theme.accent};
-      }
-
-      #battery.warning:not(.charging) {
-        color: ${theme.warning};
-      }
-
-      #battery.critical:not(.charging) {
-        color: ${theme.error};
-        animation: blink 1s linear infinite;
-      }
-
-      @keyframes blink {
-        50% {
-          opacity: 0.5;
-        }
-      }
-
-      #network {
-        color: ${theme.info};
-      }
-
-      #network.disconnected {
-        color: ${theme.error};
-      }
-
-      #pulseaudio {
-        color: ${theme.warning};
-      }
-
-      #pulseaudio.muted {
-        color: ${theme.fgAlt};
-      }
-    '';
+    # Waybar CSS from centralized theme system
+    style = osConfig.theme.waybar.css;
   };
 
   # Hyprpaper configuration (wallpaper daemon)
@@ -547,6 +374,7 @@ in
     # Screenshot utilities
     grim
     slurp
+    hyprpicker
 
     # Clipboard manager
     wl-clipboard
