@@ -20,11 +20,21 @@ in
   #    xdg.configFile."gtk-4.0/settings.ini".force = true;
   #    xdg.configFile."gtk-4.0/gtk.css".force = true;
   #    home.file.".gtkrc-2.0".force = true;
+
   gtk = {
     enable = true;
+    theme = {
+      name = osConfig.theme.gtk.themeName;
+      package = pkgs.${osConfig.theme.gtk.themePackage};
+    };
     iconTheme = {
-      name = "Papirus-Dark";
-      package = pkgs.papirus-icon-theme;
+      name = osConfig.theme.gtk.iconThemeName;
+      package = pkgs.${osConfig.theme.gtk.iconThemePackage};
+    };
+    cursorTheme = {
+      name = "Bibata-Modern-Classic";
+      package = pkgs.bibata-cursors;
+      size = 24;
     };
     gtk2.configLocation = "${config.xdg.configHome}/gtk-2.0/gtkrc";
     gtk3.extraCss = osConfig.theme.gtk.gtk3Css;
@@ -32,18 +42,20 @@ in
       enable-inspector-keybinding = true;
     };
     gtk4.extraCss = osConfig.theme.gtk.gtk4Css;
-    gtk4.extraConfig = {
-      enable-inspector-keybinding = true;
-    };
+    # GTK4 doesn't support enable-inspector-keybinding (GTK3 only)
+    # Inspector is always available in GTK4 with Ctrl+Shift+I/D
   };
 
   # Hide rofi-theme-selector from app launcher
-  xdg.dataFile."applications/rofi-theme-selector.desktop".text = ''
-    [Desktop Entry]
-    Type=Application
-    Name=Rofi Theme Selector
-    NoDisplay=true
-  '';
+  xdg.dataFile."applications/rofi-theme-selector.desktop" = {
+    force = true;
+    text = ''
+      [Desktop Entry]
+      Type=Application
+      Name=Rofi Theme Selector
+      NoDisplay=true
+    '';
+  };
 
   # Rofi configuration
   programs.rofi = {
@@ -55,23 +67,29 @@ in
 
   # Rofi custom theme (uses theme system)
   # Rofi theme from centralized theme system
-  home.file.".config/rofi/carbonfox.rasi".text = osConfig.theme.rofi.rasi;
+  home.file.".config/rofi/carbonfox.rasi" = {
+    force = true;
+    text = osConfig.theme.rofi.rasi;
+  };
 
   # Set rofi theme
-  xdg.configFile."rofi/config.rasi".text = ''
-    configuration {
-      modi: "drun,run,window";
-      font: "JetBrainsMono Nerd Font 12";
-      terminal: "${pkgs.ghostty}/bin/ghostty";
-      show-icons: true;
-      display-drun: "";
-      display-run: "";
-      display-window: "";
-      drun-display-format: "{name}";
-      icon-theme: "Papirus-Dark";
-    }
-    @theme "carbonfox"
-  '';
+  xdg.configFile."rofi/config.rasi" = {
+    force = true;
+    text = ''
+      configuration {
+        modi: "drun,run,window";
+        font: "JetBrainsMono Nerd Font 12";
+        terminal: "${pkgs.ghostty}/bin/ghostty";
+        show-icons: true;
+        display-drun: "";
+        display-run: "";
+        display-window: "";
+        drun-display-format: "{name}";
+        icon-theme: "Papirus-Dark";
+      }
+      @theme "carbonfox"
+    '';
+  };
 
   # Hyprland configuration file
   wayland.windowManager.hyprland = {
@@ -99,6 +117,14 @@ in
 
       "$mod" = "SUPER";
 
+      # Environment variables
+      env = [
+        "GSK_RENDERER,gl" # Fix GTK4 flickering (use GL renderer instead of Vulkan)
+        "GDK_BACKEND, wayland, x11" # Fix backend
+        "XCURSOR_THEME,Bibata-Modern-Classic" # Cursor theme
+        "XCURSOR_SIZE,24" # Cursor size
+      ];
+
       # Monitor configuration
       monitor = [
         ",preferred,auto,1" # Auto-detect and use preferred resolution
@@ -109,8 +135,10 @@ in
         "hyprpaper" # Wallpaper daemon
         "waybar" # Status bar (systemd integration incompatible with disabled Hyprland systemd)
         "nm-applet --indicator" # NetworkManager applet (WiFi secrets agent - runs in background)
-        "mako" # Notification daemon
         "${pkgs.polkit_gnome}/libexec/polkit-gnome-authentication-agent-1" # Polkit agent
+        "hyprctl setcursor Bibata-Modern-Classic 24" # Set cursor theme
+        "wl-paste --type text --watch cliphist store" # Clipboard history daemon (text)
+        "wl-paste --type image --watch cliphist store" # Clipboard history daemon (images)
       ];
 
       # Keybindings
@@ -119,7 +147,7 @@ in
         "$mod SHIFT, RETURN, exec, zeditor"
         "$mod, Q, killactive,"
         "$mod, M, exit,"
-        "$mod, E, exec, thunar"
+        "$mod, E, exec, nautilus --new-window"
         "$mod, V, togglefloating,"
         "$mod, D, exec, rofi -show drun"
         "$mod, P, pseudo,"
@@ -128,9 +156,15 @@ in
         # Screen lock
         "$mod, L, exec, swaylock"
 
-        # Screenshots
-        ", Print, exec, grim ~/Pictures/screenshot-$(date +%Y%m%d-%H%M%S).png"
-        "SHIFT, Print, exec, grim -g \"$(slurp)\" ~/Pictures/screenshot-$(date +%Y%m%d-%H%M%S).png"
+        # Screenshots (automatically copied to clipboard)
+        ", Print, exec, grim - | wl-copy && grim ~/Pictures/screenshot-$(date +%Y%m%d-%H%M%S).png"
+        "SHIFT, Print, exec, grim -g \"$(slurp)\" - | wl-copy && grim -g \"$(slurp)\" ~/Pictures/screenshot-$(date +%Y%m%d-%H%M%S).png"
+        # Screenshot to clipboard only (no file saved)
+        "CTRL, Print, exec, grim - | wl-copy"
+        "CTRL SHIFT, Print, exec, grim -g \"$(slurp)\" - | wl-copy"
+
+        # Clipboard history manager
+        "$mod SHIFT, V, exec, cliphist list | rofi -dmenu -p 'Clipboard' | cliphist decode | wl-copy"
 
         # Color picker (hyprpicker copies hex to clipboard)
         "$mod SHIFT, C, exec, hyprpicker -a"
@@ -246,6 +280,15 @@ in
         vfr = true; # Variable frame rate (saves power)
         vrr = 0; # VRR off (0), on (1), or fullscreen only (2)
       };
+
+      # Window rules
+      windowrulev2 = [
+        # Rofi should float and be centered
+        "float, class:^(rofi)$"
+        "center, class:^(rofi)$"
+        "stayfocused, class:^(rofi)$"
+        "dimaround, class:^(rofi)$"
+      ];
     };
   };
 
@@ -262,17 +305,70 @@ in
       mainBar = {
         layer = "top";
         position = "top";
-        height = 30;
-        modules-left = [ "hyprland/workspaces" ];
-        modules-center = [ "clock" ];
+        height = 34;
+        modules-left = [
+          "clock"
+          "hyprland/workspaces"
+        ];
+        modules-center = [ ];
         modules-right = [
-          "network"
+          "cpu"
+          "memory"
+          "temperature"
+          "disk"
+          "backlight"
           "pulseaudio"
+          "network"
           "battery"
         ];
 
         "hyprland/workspaces" = {
-          format = "{id}";
+          format = "{icon}";
+          format-icons = {
+            "1" = "󰹟";
+            "2" = "󰹟";
+            "3" = "󰹟";
+            "4" = "󰹟";
+            "5" = "󰹟";
+            "6" = "󰹟";
+            "7" = "󰹟";
+            "8" = "󰹟";
+            "9" = "󰹟";
+            default = "";
+            urgent = "";
+          };
+        };
+
+        cpu = {
+          format = " {usage}%";
+          tooltip = true;
+          interval = 2;
+          tooltip-format = "CPU: {usage}%\nLoad: {load}";
+          on-click = "ghostty -e btop";
+        };
+
+        memory = {
+          format = " {used:0.1f}GB ({percentage}%)";
+          tooltip = true;
+          interval = 5;
+          tooltip-format = "RAM: {used:0.1f}GB / {total:0.1f}GB ({percentage}%)";
+          on-click = "ghostty -e btop";
+        };
+
+        temperature = {
+          format = " {temperatureC}°C";
+          format-critical = " {temperatureC}°C";
+          critical-threshold = 80;
+          interval = 2;
+          tooltip-format = "Temperature: {temperatureC}°C / {temperatureF}°F";
+        };
+
+        disk = {
+          format = " {percentage_used}%";
+          path = "/";
+          interval = 30;
+          tooltip-format = "Disk: {used} / {total} ({percentage_used}%)\nAvailable: {free}";
+          on-click = "ghostty -e btop";
         };
 
         clock = {
@@ -292,14 +388,17 @@ in
         };
 
         battery = {
-          format = "{capacity}% {icon}";
+          format = "{icon} {capacity}%";
           format-icons = [
-            ""
-            ""
-            ""
-            ""
-            ""
+            "󰂎" # 0-20% (empty)
+            "󰁺" # 20-40% (low)
+            "󰁻" # 40-60% (medium)
+            "󰁼" # 60-80% (good)
+            "󰁽" # 80-100% (full)
           ];
+          format-charging = "󰂄 {capacity}%"; # Charging icon
+          format-plugged = "󰚥 {capacity}%"; # Plugged icon
+          format-full = "󰁹 {capacity}%"; # Full/charged icon
         };
 
         network = {
@@ -316,6 +415,20 @@ in
           tooltip-format-wifi = "{essid} ({signalStrength}%)";
           tooltip-format-ethernet = "{ifname}: {ipaddr}";
           on-click = "rofi-network-manager";
+        };
+
+        backlight = {
+          format = "{icon} {percent}%";
+          format-icons = [
+            "󱩏" # 0-20%
+            "󱩑" # 20-40%
+            "󱩓" # 40-60%
+            "󱩕" # 60-80%
+            "󰛨" # 80-100%
+          ];
+          tooltip-format = "Brightness: {percent}%";
+          on-scroll-up = "brightnessctl set +5%";
+          on-scroll-down = "brightnessctl set 5%-";
         };
 
         pulseaudio = {
@@ -339,21 +452,94 @@ in
   };
 
   # Hyprpaper configuration (wallpaper daemon)
-  home.file.".config/hypr/hyprpaper.conf".text = ''
-    # Preload wallpaper from nix-configs repo
-    preload = ${config.home.homeDirectory}/nix-configs/wallpapers/safe_landing_horizontal.jpg
+  home.file.".config/hypr/hyprpaper.conf" = {
+    force = true;
+    text = ''
+      # Preload wallpaper from nix-configs repo
+      preload = ${config.home.homeDirectory}/nix-configs/wallpapers/violet-lake.jpg
 
-    # Set wallpaper for all monitors
-    # Format: wallpaper = monitor,path
-    # Empty monitor name = apply to all monitors
-    wallpaper = ,${config.home.homeDirectory}/nix-configs/wallpapers/safe_landing_horizontal.jpg
+      # Set wallpaper for all monitors
+      # Format: wallpaper = monitor,path
+      # Empty monitor name = apply to all monitors
+      wallpaper = ,${config.home.homeDirectory}/nix-configs/wallpapers/violet-lake.jpg
 
-    # Disable splash text
-    splash = false
+      # Disable splash text
+      splash = false
 
-    # Disable IPC (saves resources if you don't need to change wallpaper dynamically)
-    ipc = off
-  '';
+      # Disable IPC (saves resources if you don't need to change wallpaper dynamically)
+      ipc = off
+    '';
+  };
+
+  # Mako notification daemon configuration
+  services.mako = {
+    enable = true;
+
+    # Urgency-specific styling using criteria
+    extraConfig = ''
+      [urgency=low]
+      border-color=${theme.accent}
+      default-timeout=3000
+
+      [urgency=normal]
+      border-color=${theme.accent}
+      default-timeout=5000
+
+      [urgency=critical]
+      border-color=${theme.error}
+      background-color=${theme.bg}
+      default-timeout=0
+    '';
+
+    settings = {
+      # Default notification style
+      font = "JetBrainsMono Nerd Font 11";
+      width = 350;
+      height = 150;
+      margin = "10";
+      padding = "15";
+      border-size = 2;
+      border-radius = 8;
+
+      # Carbonfox colors
+      background-color = theme.bgAlt;
+      text-color = theme.fg;
+      border-color = theme.border;
+
+      # Progress bar color
+      progress-color = "over ${theme.accent}";
+
+      # Icon settings
+      icons = true;
+      max-icon-size = 48;
+      icon-location = "left";
+
+      # Behavior
+      default-timeout = 5000; # 5 seconds
+      ignore-timeout = false;
+      max-visible = 5;
+      sort = "-time"; # Sort by time, newest first
+      layer = "overlay"; # Show above other windows
+      anchor = "top-right";
+
+      # Grouped notifications
+      group-by = "app-name,summary";
+
+      # Actions
+      actions = true;
+      history = true;
+      max-history = 100;
+
+      # Format
+      format = "<b>%s</b>\\n%b";
+
+      # Click behavior
+      on-button-left = "dismiss";
+      on-button-middle = "none";
+      on-button-right = "dismiss-all";
+      on-touch = "dismiss";
+    };
+  };
 
   # Hyprland user packages
   home.packages = with pkgs; [
@@ -367,9 +553,8 @@ in
     # Status bar (configured above via programs.waybar)
     # waybar is enabled via programs.waybar, not home.packages
 
-    # Notification daemon
-    mako
-    libnotify
+    # Notification daemon (mako configured via services.mako above)
+    libnotify # Command-line tool to send notifications
 
     # Screenshot utilities
     grim
@@ -377,7 +562,8 @@ in
     hyprpicker
 
     # Clipboard manager
-    wl-clipboard
+    wl-clipboard # Basic clipboard utilities (wl-copy, wl-paste)
+    cliphist # Clipboard history manager
 
     # Wallpaper daemon
     hyprpaper
@@ -389,7 +575,7 @@ in
     brightnessctl
 
     # File manager
-    xfce.thunar
+    nautilus
 
     # Network management applet
     networkmanagerapplet

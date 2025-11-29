@@ -26,6 +26,12 @@
       readOnly = true;
     };
 
+    isDark = lib.mkOption {
+      type = lib.types.bool;
+      description = "Whether this is a dark theme";
+      readOnly = true;
+    };
+
     zed = {
       theme = lib.mkOption {
         type = lib.types.str;
@@ -41,6 +47,30 @@
     };
 
     gtk = {
+      themeName = lib.mkOption {
+        type = lib.types.str;
+        description = "Base GTK theme name to use";
+        readOnly = true;
+      };
+
+      themePackage = lib.mkOption {
+        type = lib.types.str;
+        description = "Package name providing the GTK theme";
+        readOnly = true;
+      };
+
+      iconThemeName = lib.mkOption {
+        type = lib.types.str;
+        description = "GTK icon theme name to use";
+        readOnly = true;
+      };
+
+      iconThemePackage = lib.mkOption {
+        type = lib.types.str;
+        description = "Package name providing the icon theme";
+        readOnly = true;
+      };
+
       gtk3Css = lib.mkOption {
         type = lib.types.str;
         description = "GTK3 CSS theme overrides";
@@ -66,6 +96,20 @@
       rasi = lib.mkOption {
         type = lib.types.str;
         description = "Rofi theme configuration (RASI format)";
+        readOnly = true;
+      };
+    };
+
+    firefox = {
+      userChrome = lib.mkOption {
+        type = lib.types.str;
+        description = "Firefox userChrome.css for UI theming";
+        readOnly = true;
+      };
+
+      userContent = lib.mkOption {
+        type = lib.types.str;
+        description = "Firefox userContent.css for web content theming";
         readOnly = true;
       };
     };

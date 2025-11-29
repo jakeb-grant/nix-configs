@@ -46,7 +46,7 @@
     wget
     curl
     git
-    htop
+    btop
     tree
     unzip
     zip

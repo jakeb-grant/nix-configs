@@ -248,7 +248,7 @@ This configuration follows a clear separation of concerns for package management
 - Needed in emergency/recovery situations
 - Core system functionality
 - **Location:** `modules/system/core.nix`
-- **Examples:** vim, git, curl, wget, htop
+- **Examples:** vim, git, curl, wget, btop
 
 **User CLI Tools** (`home.packages`):
 - Terminal-based utilities and development tools
