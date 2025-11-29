@@ -126,69 +126,69 @@ in
   home.file.".config/btop/themes/carbonfox.theme" = {
     force = true;
     text = ''
-    # Carbonfox theme for btop
-    # Main background, empty for terminal default
-    theme[main_bg]="${theme.bg}"
+      # Carbonfox theme for btop
+      # Main background, empty for terminal default
+      theme[main_bg]="${theme.bg}"
 
-    # Main text color
-    theme[main_fg]="${theme.fg}"
+      # Main text color
+      theme[main_fg]="${theme.fg}"
 
-    # Title color for boxes
-    theme[title]="${theme.accent}"
+      # Title color for boxes
+      theme[title]="${theme.accent}"
 
-    # Highlight color for keyboard shortcuts
-    theme[hi_fg]="${theme.accent}"
+      # Highlight color for keyboard shortcuts
+      theme[hi_fg]="${theme.accent}"
 
-    # Background color of selected items
-    theme[selected_bg]="${theme.bgAlt}"
+      # Background color of selected items
+      theme[selected_bg]="${theme.bgAlt}"
 
-    # Foreground color of selected items
-    theme[selected_fg]="${theme.accent}"
+      # Foreground color of selected items
+      theme[selected_fg]="${theme.accent}"
 
-    # Color of inactive/disabled text
-    theme[inactive_fg]="${theme.fgAlt}"
+      # Color of inactive/disabled text
+      theme[inactive_fg]="${theme.fgAlt}"
 
-    # Color of text appearing on top of graphs
-    theme[graph_text]="${theme.fg}"
+      # Color of text appearing on top of graphs
+      theme[graph_text]="${theme.fg}"
 
-    # Misc colors for processes box
-    theme[proc_misc]="${theme.accent}"
+      # Misc colors for processes box
+      theme[proc_misc]="${theme.accent}"
 
-    # CPU box outline color
-    theme[cpu_box]="${theme.info}"
+      # CPU box outline color
+      theme[cpu_box]="${theme.info}"
 
-    # Memory/disks box outline color
-    theme[mem_box]="${theme.info}"
+      # Memory/disks box outline color
+      theme[mem_box]="${theme.info}"
 
-    # Net up/down box outline color
-    theme[net_box]="${theme.accent}"
+      # Net up/down box outline color
+      theme[net_box]="${theme.accent}"
 
-    # Processes box outline color
-    theme[proc_box]="${theme.info}"
+      # Processes box outline color
+      theme[proc_box]="${theme.info}"
 
-    # Box divider line color
-    theme[div_line]="${theme.border}"
+      # Box divider line color
+      theme[div_line]="${theme.border}"
 
-    # Temperature graph colors (cool to hot)
-    theme[temp_start]="${theme.accent}"
-    theme[temp_mid]="${theme.warning}"
-    theme[temp_end]="${theme.error}"
+      # Temperature graph colors (cool to hot)
+      theme[temp_start]="${theme.accent}"
+      theme[temp_mid]="${theme.warning}"
+      theme[temp_end]="${theme.error}"
 
-    # CPU graph colors
-    theme[cpu_start]="${theme.info}"
-    theme[cpu_mid]="${theme.info}"
-    theme[cpu_end]="${theme.info}"
+      # CPU graph colors
+      theme[cpu_start]="${theme.info}"
+      theme[cpu_mid]="${theme.info}"
+      theme[cpu_end]="${theme.info}"
 
-    # Memory graph colors
-    theme[mem_start]="${theme.info}"
-    theme[mem_mid]="${theme.info}"
-    theme[mem_end]="${theme.info}"
+      # Memory graph colors
+      theme[mem_start]="${theme.info}"
+      theme[mem_mid]="${theme.info}"
+      theme[mem_end]="${theme.info}"
 
-    # Network upload graph colors
-    theme[net_start]="${theme.accent}"
-    theme[net_mid]="${theme.accent}"
-    theme[net_end]="${theme.accent}"
-  '';
+      # Network upload graph colors
+      theme[net_start]="${theme.accent}"
+      theme[net_mid]="${theme.accent}"
+      theme[net_end]="${theme.accent}"
+    '';
   };
 
   # Force overwrite Firefox profiles.ini
