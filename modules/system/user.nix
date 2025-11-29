@@ -1,4 +1,9 @@
-{ lib, config, pkgs, ... }:
+{
+  lib,
+  config,
+  pkgs,
+  ...
+}:
 
 let
   cfg = config.main-user;
@@ -38,7 +43,14 @@ in
     };
 
     extraGroups = lib.mkOption {
-      default = [ "networkmanager" "wheel" "video" "audio" ];
+      default = [
+        "networkmanager"
+        "wheel"
+        "video"
+        "audio"
+        "libvirtd"
+        "docker"
+      ];
       description = "Additional groups for the user";
       type = lib.types.listOf lib.types.str;
     };

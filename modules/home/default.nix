@@ -65,6 +65,11 @@
             command = "uvx";
             args = [ "mcp-nixos" ];
           };
+          archops = {
+            type = "stdio";
+            command = "uvx";
+            args = [ "arch-ops-server" ];
+          };
         };
       };
 

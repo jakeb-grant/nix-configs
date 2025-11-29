@@ -156,12 +156,12 @@ in
         # Screen lock
         "$mod, L, exec, swaylock"
 
-        # Screenshots (automatically copied to clipboard)
-        ", Print, exec, grim - | wl-copy && grim ~/Pictures/screenshot-$(date +%Y%m%d-%H%M%S).png"
-        "SHIFT, Print, exec, grim -g \"$(slurp)\" - | wl-copy && grim -g \"$(slurp)\" ~/Pictures/screenshot-$(date +%Y%m%d-%H%M%S).png"
+        # Screenshots (saved to file and copied to clipboard)
+        ", Print, exec, grim ~/Pictures/screenshot-$(date +%Y%m%d-%H%M%S).png && grim - | wl-copy --type image/png"
+        "SHIFT, Print, exec, FILE=~/Pictures/screenshot-$(date +%Y%m%d-%H%M%S).png && grim -g \"$(slurp)\" \"$FILE\" && wl-copy --type image/png < \"$FILE\""
         # Screenshot to clipboard only (no file saved)
-        "CTRL, Print, exec, grim - | wl-copy"
-        "CTRL SHIFT, Print, exec, grim -g \"$(slurp)\" - | wl-copy"
+        "CTRL, Print, exec, grim - | wl-copy --type image/png"
+        "CTRL SHIFT, Print, exec, grim -g \"$(slurp)\" - | wl-copy --type image/png"
 
         # Clipboard history manager
         "$mod SHIFT, V, exec, cliphist list | rofi -dmenu -p 'Clipboard' | cliphist decode | wl-copy"
