@@ -455,19 +455,24 @@ in
   home.file.".config/hypr/hyprpaper.conf" = {
     force = true;
     text = ''
-      # Preload wallpaper from nix-configs repo
-      preload = ${config.home.homeDirectory}/nix-configs/wallpapers/violet-lake.jpg
+      # Preload all wallpapers for dynamic switching
+      preload = ${config.home.homeDirectory}/nix-configs/wallpapers/violet-lake.png
+      preload = ${config.home.homeDirectory}/nix-configs/wallpapers/safe_landing_horizontal.jpg
+      preload = ${config.home.homeDirectory}/nix-configs/wallpapers/courtside-sunset.png
+      preload = ${config.home.homeDirectory}/nix-configs/wallpapers/everforest.jpg
+      preload = ${config.home.homeDirectory}/nix-configs/wallpapers/forest-jade.jpg
+      preload = ${config.home.homeDirectory}/nix-configs/wallpapers/pastel-window.png
 
-      # Set wallpaper for all monitors
+      # Set default wallpaper for all monitors
       # Format: wallpaper = monitor,path
       # Empty monitor name = apply to all monitors
-      wallpaper = ,${config.home.homeDirectory}/nix-configs/wallpapers/violet-lake.jpg
+      wallpaper = ,${config.home.homeDirectory}/nix-configs/wallpapers/violet-lake.png
 
       # Disable splash text
       splash = false
 
-      # Disable IPC (saves resources if you don't need to change wallpaper dynamically)
-      ipc = off
+      # Enable IPC for dynamic wallpaper switching
+      ipc = on
     '';
   };
 
